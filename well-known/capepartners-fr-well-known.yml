@@ -1,0 +1,160 @@
+generated: '2026-09-19'
+method: probed
+source: Live GET probes of the named /.well-known/* path list on capepartners.fr, www.capepartners.fr and sniffer.capepartners.fr, 2026-09-19. Every row below is a request that was actually issued; every status is the one returned to the first request (redirects were NOT followed for the recorded status).
+summary:
+  hosts_probed: 3
+  paths_probed: 46
+  documents_served: 4
+  note: 'Cape Partners serves two real well-known documents, each on two hosts: an A2A 1.0 Agent Card at /.well-known/agent-card.json (graded conformant in a2a/) and an AI-plugin / ARD-style discovery manifest at /.well-known/ai-plugin.json that points at the OpenAPI, llms.txt and the registration policy. It also serves its llms.txt at the non-standard /.well-known/llms.txt (same body as /llms.txt) — recorded here for completeness but not counted as a standard well-known document. No security.txt (RFC 9116), no OAuth/OIDC discovery (RFC 8414 / RFC 9728 / OIDC — consistent with the API, which uses path capability tokens and an exchange key rather than OAuth), no RFC 9727 api-catalog, no AAuth resource, no MCP server card. The apex capepartners.fr is a bare redirect host: every path 301s to the www homepage, so it serves nothing at any well-known path.'
+  false_positive_note: 'The first probe of this run followed redirects and recorded 200 text/html for every apex path — the www HOMEPAGE, 39,963 bytes, every time. That is the SPA/catch-all false positive this recipe warns about, caught by comparing body sizes. The apex rows below record the raw 301 instead. On www and sniffer, unknown well-known paths answer a real 404 (a 330-byte text/html error page), so the 200s recorded there are real documents.'
+hosts:
+- host: capepartners.fr
+  role: Registrable domain (apex). Redirect-only — 301 to https://www.capepartners.fr/ for every path.
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 301
+    note: Location https://www.capepartners.fr/ (homepage, not the card). Miss.
+  - path: /.well-known/agent.json
+    status: 301
+    note: Redirects to the www homepage. Miss.
+  - path: /.well-known/security.txt
+    status: 301
+    note: Redirects to the www homepage. Miss.
+  - path: /.well-known/openid-configuration
+    status: 301
+  - path: /.well-known/oauth-authorization-server
+    status: 301
+  - path: /.well-known/oauth-protected-resource
+    status: 301
+  - path: /.well-known/api-catalog
+    status: 301
+  - path: /.well-known/ai-plugin.json
+    status: 301
+    note: Redirects to the www homepage; the real document is on www (below).
+  - path: /.well-known/mcp.json
+    status: 301
+- host: www.capepartners.fr
+  role: Production website and API host (OpenAPI servers[0], A2A endpoint, ai-plugin, llms.txt)
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: application/json; charset=utf-8
+    file: a2a/capepartners-fr-agent-card.json
+    standard: A2A 1.0.0 Agent Card
+    note: 8047 bytes. Two skills bound to a live JSON-RPC + HTTP+JSON interface at https://www.capepartners.fr/a2a. Graded conformant in a2a/capepartners-fr-a2a.yml.
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: application/json; charset=utf-8
+    file: capepartners-fr-ai-plugin.json
+    standard: AI-plugin manifest (schema_version v1) / ARD-style discovery
+    note: 3630 bytes. name_for_model capepartners_deal_flow; api.type openapi -> https://www.capepartners.fr/openapi.json; auth.type "path-capability-token + NDA"; a guards block documenting the 400/403/429 responses; contact_email contact@capepartners.fr. logo_url points at the homepage, not an image.
+  - path: /.well-known/llms.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+    file: llms/capepartners-fr-llms.txt
+    standard: non-standard location (llms.txt is specified at the site root, and is also served there)
+    note: Same 14,224-byte body as /llms.txt. The provider's own llms.txt and OpenAPI both advertise this path.
+  - path: /.well-known/agent.json
+    status: 404
+    note: Legacy pre-0.3 agent-card path. Real 404 (330-byte error page), not an SPA shell.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    note: Consistent with the contract — no OAuth; the API authenticates with a workspace UUID in the URL path and an exchange capability key.
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/mcp/server-card.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/agent-skills/index.json
+    status: 404
+  - path: /.well-known/agents.json
+    status: 404
+  - path: /.well-known/api-onboarding
+    status: 404
+  - path: /.well-known/ai-catalog.json
+    status: 404
+- host: sniffer.capepartners.fr
+  role: Workspace host (OpenAPI servers[1]); serves the same static discovery surface as www
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: application/json; charset=utf-8
+    file: a2a/capepartners-fr-agent-card.json
+    standard: A2A 1.0.0 Agent Card
+    note: Byte-identical to the www copy (8047 bytes); interface URLs still point at www.capepartners.fr/a2a.
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    content_type: application/json; charset=utf-8
+    file: capepartners-fr-ai-plugin.json
+    standard: AI-plugin manifest (schema_version v1)
+    note: Byte-identical to the www copy (3630 bytes).
+  - path: /.well-known/llms.txt
+    status: 200
+    content_type: text/plain; charset=utf-8
+    file: llms/capepartners-fr-llms.txt
+    standard: non-standard location
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/mcp/server-card.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/agent-skills/index.json
+    status: 404
+  - path: /.well-known/agents.json
+    status: 404
+  - path: /.well-known/api-onboarding
+    status: 404
+  - path: /.well-known/ai-catalog.json
+    status: 404
+related_machine_readable:
+- url: https://www.capepartners.fr/openapi.json
+  status: 200
+  file: openapi/_original/capepartners-fr-openapi.json
+  note: OpenAPI 3.1.0, 47 paths / 48 operations, 49 schemas, 159,451 bytes. Also served byte-identical at /api/openapi.json and on sniffer.capepartners.fr/openapi.json. No operationIds are declared.
+- url: https://www.capepartners.fr/api
+  status: 200
+  note: JSON capability index — service, version, base_url, auth model, guards (uuid / cross_origin / rate_limit / nda / turnstile), discovery links and a capabilities[] list of every endpoint.
+- url: https://www.capepartners.fr/api/exchange/spec
+  status: 200
+  note: JSON twin of agent-exchange.html — publish recipe, tiers, service_types catalog, A2A operations served and refused.
+- url: https://www.capepartners.fr/llms.txt
+  status: 200
+  file: llms/capepartners-fr-llms.txt
+- url: https://www.capepartners.fr/llms-full.txt
+  status: 200
+  note: 17,140 bytes. Not saved (repo policy — *-llms-full.txt is gitignored).
+- url: https://www.capepartners.fr/robots.txt
+  status: 200
+  note: 'Carries a Content-Signal line (search=yes,ai-input=yes,ai-train=yes,use=reference) and explicit Allow rules for 22 named AI/search crawlers with Crawl-delay 10 for GPTBot, ClaudeBot, CCBot and Bytespider.'
+- url: https://www.capepartners.fr/sitemap.xml
+  status: 200
+- url: https://www.capepartners.fr/apis.json
+  status: 404
+  note: No provider-published APIs.json.
+agent_card:
+  found: true
+  host: www.capepartners.fr
+  path: /.well-known/agent-card.json
+  file: a2a/capepartners-fr-agent-card.json
+  manifest: a2a/capepartners-fr-a2a.yml
+  grade: conformant

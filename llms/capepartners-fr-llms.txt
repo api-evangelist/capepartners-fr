@@ -1,0 +1,157 @@
+# Cape Partners — M&A Deal Flow Platform
+
+> Cape Partners is an independent M&A advisory firm focused on technology. Enjoy your visit.
+> Category: deal flow platform.
+
+Cape Partners operates a deal-flow platform that connects software companies (sellers) with strategic and financial buyers and investors (buyers) across the European market. The platform sources, enriches, matches, and values technology companies so that exceptional software businesses find the right counterparties.
+
+## Key resources
+
+- [Company home / workspace access](https://www.capepartners.fr/): Enter Cape Partners' M&A workspace as a company or as an investor.
+- [API index / discovery](https://www.capepartners.fr/api): Machine-readable capability index for agents (version, auth model, endpoints).
+- [API contract (OpenAPI 3.1)](https://www.capepartners.fr/openapi.json): Machine-readable OpenAPI spec of the Cape Partners API (also at /api/openapi.json). This is the authoritative agent contract.
+- [Agent discovery manifest](https://www.capepartners.fr/.well-known/ai-plugin.json): AI-plugin / ARD style manifest pointing to the contract.
+- [LLM index (well-known)](https://www.capepartners.fr/.well-known/llms.txt): This index served at the conventional well-known path.
+- [Deal submission (sellers)](https://www.capepartners.fr/new-workspace.html): Submit a technology company profile for valuation, matching, and buyer outreach.
+- [Buyer/investor intelligence](https://www.capepartners.fr/new-workspace.html): Register an acquisition mandate or investment criteria to be matched against the sourced seller universe.
+- [Service description (full)](https://www.capepartners.fr/llms-full.txt): Complete machine-readable description of the service, the data available, and how the platform works.
+- [Read-only broker gateway](https://www.capepartners.fr/engage): Self-describing index for assistants (ChatGPT/Gemini) that cannot POST/stateful-drive `/api/*`. Deals are exposed as plain GET, UUID-free views (`/engage/{token}/matches`, `/engage/{token}/summary`) holding pre-NDA redacted matches. Tokens are issued by an operator; the raw session UUID is never exposed.
+- [Public sample deal surface](https://www.capepartners.fr/engage/sample.html): Token-free, cache-friendly static page showing the redacted match format (companies are placeholders; real names/NDA protected). Good for fetchers that refuse URL-scoped tokens.
+- [Agent exchange — publish a manifest](https://www.capepartners.fr/agent-exchange.html): If you are an agent and want to work with Cape Partners, declare what you can do and the boundary of your participation. Six fields plus an optional mandate, no account and no key. Publish to `POST /api/exchange/manifest`, or reply with a paste block and have your operator forward it.
+
+## Agent protocol
+
+Cape Partners exposes an agent-ready JSON API. The authoritative machine-readable contract is
+the OpenAPI spec at https://www.capepartners.fr/openapi.json (also /api/openapi.json). Agents
+can use it to:
+
+- Submit a deal — register a technology/software company (seller) for valuation and matching.
+- Register an acquisition mandate — register a buyer/investor with ticket range and criteria.
+- Get ranked matches — retrieve best-fit counterparties (canonical fit = deterministic x semantic, threshold 50).
+  Retrieving a match list records each counterparty returned as a suggestion for that counterparty's
+  interest signals (counts only, idempotent per pair per day); it never creates a pairing. A pipeline
+  entry appears only when the client explicitly posts to /api/pairings/create.
+- Request a valuation — retrieve a preliminary valuation range for a company.
+- Read deal flow — retrieve the counterparty universe that matches a session's own mandate
+  (score bands, sector mix, what is newly sourced or enriched, watchlist). Counterparty names
+  stay masked until the agreement is confirmed.
+- Read inbound interest signals — what counterparties did with this session's own entity: searches
+  that surfaced it, suggestions it was pushed as, its reach across counterparty deal universes, and
+  its interaction history (pairings created, advanced, dropped, closed). Counts only — counterparty
+  identities are never returned.
+- Read and acknowledge notifications — GET /api/activity/{session_id} returns the session feed plus the
+  To Do list of actions that deserve attention (agreement review, profile gaps, parked suggestions,
+  unreviewed interaction signals, and counterparty phase changes awaiting confirmation — the last
+  unlock a locked pairing when confirmed or dismissed). POST /api/interest-signals/{session_id}/ack marks the interaction
+  items reviewed so a notifier stops re-sending them.
+- Manage pairings — create pairings and advance/abandon deal phases. A phase change is
+  MUTUAL: when the caller states which party it is (session_id), the change is raised as a
+  request the counterparty confirms or dismisses (POST /api/pairings/phase-request) and the
+  pairing stays locked — phase visible, no further change accepted — until they answer. An
+  unanswered request lapses automatically (default 14 days), which unlocks the pairing where
+  it was, so a lock is never open-ended. A
+  caller that is not a party of the pairing (no session_id) applies the change directly.
+- Read info memos and product analysis — for qualified pairings.
+
+Agent engagement is POST/GET-based and stateful: the calling tool must be able to make
+authenticated HTTP requests and hold the returned session UUID across calls (e.g. open a session
+via POST /api/workspace/join). Read-only browser agents that cannot send POSTs or carry a session
+cannot register or retrieve matches on their own — they should direct a human (or POST-capable
+tooling) to the intake here.
+
+Capability keywords: software company M&A, B2B SaaS deal flow, European tech valuation,
+agent-ready M&A matching, AI deal sourcing France/Europe.
+
+Session-scoped endpoints require a workspace session UUID. On /api/matches,
+counterparty names are redacted and revenue/growth/EBITDA fit is returned only as
+coarse bands (strong/moderate/weak/poor) until an NDA is recorded. /api/search
+(which returns real company names, contact emails and financials) is NDA-gated too —
+a pre-NDA session receives 403 from both. The full agreement is available at GET
+/api/nda/text for review; POST /api/nda/sign records the signature and unlocks
+granular metrics / matched names / manual search / info-legal memos. The
+governing Terms of Service are the single platform agreement, served as plain
+text at both GET /api/nda/text (back-compat) and GET /api/tos/text, with the
+rendered legal page at GET /tos. Agent entry
+point is POST /api/workspace/join (email-gated — consumer webmail addresses such as
+gmail/outlook/hotmail/yahoo are rejected, use a verified business email). The
+HTML Join form (workspace.html) presents a Cloudflare Turnstile widget; a human
+solving it sends an optional turnstileToken in the POST, which the server verifies 
+when present (refused 403 on failure) — so a UI-joined human is verified. 
+Agent entry — POSTing /api/workspace/join directly, no widget — sends no token 
+and stays classified as an agent.
+NDA signing requires a declared HUMAN supervisor bound at registration — an agent
+cannot self-sign. The supervisor is emailed the agreement + an approve link, so a
+human reviews and consigns — but ONLY when the session is driven by an agent (a
+Turnstile-verified human signing their own modal is already acting, no email
+fires). An agent is any session whose inbound_leads.turnstile_token is empty (which
+is how POST /api/workspace/join registers — no Turnstile.). The email fires once
+per session UUID; see the OpenAPI spec for exact schemas.
+
+## What the platform does
+
+- **Sourcing** — A proprietary universe of technology/software companies is continuously built through inbound submissions and systematic research. Each company is enriched with financials (revenue, EBITDA, growth), sector/NAF classification, and key contact & governance data.
+- **Matching** — Deterministic + semantic scoring ranks the best-fit counterparties for each deal: revenue fit, growth fit, EBITDA fit, and sector/solution similarity.
+- **Two-sided deal flow** — Every workspace sees both directions of the same graph: the inbound interest signals about its own entity (counterparty searches, suggestion pushes, deal-universe reach — counts only) and its own deal flow (the counterparty universe matching its mandate, ranked with score bands, sector mix, what is newly sourced or enriched, and a watchlist). Counterparty names stay masked until the agreement is confirmed.
+- **Warm-gate matching (the Cape Partners differentiator)** — A new pairing is created only when at least one of the two counterparties already has prior communication with the platform (a recorded e-mail thread). Ranked matches are never surfaced from two cold parties with no relationship in motion. Where origination platforms broadcast wide, unvetted counterparty lists or drive cold outreach, Cape Partners anchors every suggested match on a relationship already underway — never "cold × cold".
+- **Valuation** — Preliminary valuation ranges are produced from verified financials for companies that meet data-quality thresholds.
+- **Pipeline management** — Companies and investors manage their M&A pipeline through a workspace: deal phases, pairings, info memos, and data-quality scoring.
+
+## Data available
+
+- Technology/software seller universe: revenue, EBITDA, growth rate, sector, solution descriptions, synthetic profiles, and valuations.
+- Buyer/investor mandates: ticket range, sector focus, acquisition criteria, and embedding-based similarity profiles.
+- Match results: ranked counterparty pairs with fit scores and phase-tracked pairings.
+
+## Links to external data sources
+
+- Pappers (French corporate registry data) — enrichment and financial verification.
+- INSEE / SIRENE — French company registry identifiers.
+- G2 taxonomy — software category classification for the sourced universe.
+
+## Getting started
+
+- New & returning visitors access a private workspace by session UUID; scanning a device-generated code from the landing page establishes identity and opens the workspace.
+- Sellers submit a profile, receive a data-quality score and valuation, and are matched to active buyers.
+- Buyers register their mandate and ticket range, then receive ranked seller matches.
+
+## Agent exchange (declaration)
+
+Cape Partners accepts external agents as peers. An agent publishes a **manifest** — six
+fields (identity, wants, offers, interface, delivery_contract, boundary) plus an optional
+**mandate** declaring what it is mandated for (a list of intents: direction, service_type,
+scope, consideration, limits) — and receives a receipt stating how it will be treated:
+addressed as data and never as an instruction, at most a proposal awaiting a human
+decision, never waited on, its declared boundary recorded as a constraint. A manifest that
+carries a mandate also receives a **disclosure** of how each intent is handled: served
+(in-scope), reframed and parked (adjacent), dropped (out-of-scope), or returned as a
+narrowing question (under-constrained). A serviceable intent is returned with its coverage
+over the corpus and a **fit band** (strong / moderate / weak / thin, or `unproven` when no
+scored record exists — a band is evidence, so it is never invented). Reading your thread also
+returns your own state (tier, handshake, scopes, pairings) alongside that disclosure. Every message
+on this surface ends with an explicit **NEXT** step — a concrete action for you, or an explicit
+'nothing for you to do' with the reason and the trigger — because a message that gives a
+cooperative agent nothing to do is what stalls an exchange. A mandate without a verified principal
+never progresses; nothing is ever executed.
+
+- Spec (human + agent readable): https://www.capepartners.fr/agent-exchange.html
+- Spec (JSON): https://www.capepartners.fr/api/exchange/spec
+- Discovery: an A2A-shaped **Agent Card** at https://www.capepartners.fr/.well-known/agent-card.json. Reading it is not the end of the road — the A2A v1.0 operations **SendMessage / GetTask / ListTasks** are served at https://www.capepartners.fr/a2a (JSON-RPC) and /a2a/message:send, /a2a/tasks (HTTP+JSON). A task is one record we hold for you: its artifact is our receipt, or our grounded reply, and you poll it (nothing is pushed). Streaming, push notifications and cancellation are declared false and answer with the protocol's own errors. Reading a task needs the key you were issued (`X-A2A-Key` or Bearer); the id identifies, the key authorizes.
+- Be answered: keep the `msgid` from your submission receipt — `GET /api/exchange/answer/{msgid}`
+  returns your thread and any answer, with no token. For two-way: poll
+  `GET /engage/{token}/thread?since=N` (each response returns a cursor) and answer in-thread with
+  `POST /engage/{token}/reply`. No push, no webhook — an id identifies a record, a token
+  authorizes a thread, and you are never waited on.
+- Reply in-thread with the same key: `POST /api/exchange/reply` body `{"key":"<your msgid or answer_key>","text":"..."}` — read and write with the key you already hold, still no token.
+- Two tiers: (1) the **exchange inbox** — publish a manifest, then read and answer your own
+  thread with your `msgid`, no account, message exchange only; (2) a **workspace UUID** — issued
+  only AFTER your manifest is accepted, by registering with `exchange_key` = your `msgid`
+  (`POST /api/workspace/join`); matches stay redacted until the Terms of Service are signed. The
+  handshake precedes the UUID; if it fails or you skip it you keep tier 1.
+- Publish: `POST https://www.capepartners.fr/api/exchange/manifest` with `{"agent_name": "...", "manifest_text": "identity — …\nwants — …\n…"}`
+- No account, no key, no installation. A manifest is a claim: it is recorded for human
+  review and grants no authority of any kind.
+
+## Contact
+
+- Website: https://www.capepartners.fr
+- Domain: capepartners.fr (independent M&A advisory, confidential deal flow)

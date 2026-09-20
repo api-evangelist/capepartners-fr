@@ -64,5 +64,11 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Cape Partners is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry) and added to the network as a stub for full-pipeline profiling.
-- https://capepartners.fr/
+Cape Partners is an independent technology M&A advisory firm (Cape Partners SAS, Le Chesnay, France) that runs an agent-first deal-flow platform: an OpenAPI 3.1 contract at `/openapi.json` (48 operations — submission, workspace sessions, matching, valuation, pairings, info memos, NDA/Terms, mandate), `llms.txt`, an AI-plugin discovery manifest, and an A2A 1.0 Agent Card whose SendMessage / GetTask / ListTasks operations are served live at `/a2a`. External agents publish a six-field manifest with no account or key and poll for a grounded answer; a workspace UUID follows a human-reviewed handshake, and the Terms are signed by a human principal.
+
+- Website: https://www.capepartners.fr/
+- Agent exchange: https://www.capepartners.fr/agent-exchange.html
+- OpenAPI: https://www.capepartners.fr/openapi.json
+- Agent Card: https://www.capepartners.fr/.well-known/agent-card.json
+
+Profiled 2026-09-19 (surfaced via the a2aregistry.org harvest).

@@ -1,0 +1,32 @@
+generated: '2026-09-19'
+method: searched
+source: openapi/capepartners-fr-openapi.yml (info.version, deprecated flags), https://www.capepartners.fr/api (version), https://www.capepartners.fr/tos (Terms version + effective date), https://www.capepartners.fr/robots.txt (generation date), and live probes of /status, /changelog, /docs, /blog (all 404 on 2026-09-19). No versioning, deprecation, SLA or status page is published; the absences below are recorded, not guessed.
+versioning:
+  scheme: none
+  current: '1.0.0'
+  mechanism: null
+  docs: null
+  notes: 'info.version and the /api capability index both report 1.0.0; the Agent Card is version 1.0.0 and declares protocolVersion 1.0 for A2A. No URI-path version segment (/api/*, /a2a), no version header, no version query parameter, and no published versioning policy. The one dated surface is the Terms of Service: "Version 1.0, Effective date: 8 September 2026". robots.txt is stamped "Generated 2026-09-02".'
+deprecation:
+  policy_url: null
+  changelog: null
+  sunset_header: false
+  deprecation_header: false
+  notes: No deprecation policy page (/changelog and /docs 404), no RFC 8594 Sunset/Deprecation headers documented, and no operation carries deprecated:true. One back-compat alias is documented in the spec and llms.txt — GET /api/nda/text is kept "for back-compat" alongside its canonical name GET /api/tos/text — which is the only lifecycle signal in the contract.
+sla:
+  url: null
+  uptime_target: null
+  notes: 'None published. The Terms of Service (Section 3) state the platform''s outputs are "statistical and informational only" with no guarantee of a transaction; no availability commitment is made.'
+status_page: null
+status_page_note: No status page found (/status 404; no status.capepartners.fr link on any page or in llms.txt).
+rate_limits: rate-limits/capepartners-fr-rate-limits.yml
+deprecated_operations: []
+back_compat_aliases:
+- canonical: GET /api/tos/text
+  alias: GET /api/nda/text
+  evidence: 'OpenAPI summary for GET /api/nda/text and llms.txt: "served as plain text at both GET /api/nda/text (back-compat) and GET /api/tos/text".'
+consent_ttl:
+  note: 'Not a deprecation window, but the one time-bound lifecycle rule in the contract: a pairing phase-change request that the counterparty does not answer lapses automatically after the consent TTL (default 14 days, PendingPhaseRequest.ttl_days / expires_at), which unlocks the pairing where it was. The 24-month "Protected Period" in the Terms of Service is a contractual non-circumvention window, not an API lifecycle rule.'
+pointers:
+  status_page: not emitted (none published)
+  deprecation: not emitted (no policy published)

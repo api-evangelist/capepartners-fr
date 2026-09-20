@@ -1,0 +1,135 @@
+generated: '2026-09-19'
+method: probed
+source: https://www.capepartners.fr/.well-known/agent-card.json
+card:
+  file: a2a/capepartners-fr-agent-card.json
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: www.capepartners.fr
+  note: 'The card is served on www.capepartners.fr and on sniffer.capepartners.fr (byte-identical, 8047 bytes on each). The apex capepartners.fr serves NO well-known surface of its own: every /.well-known/* path there answers 301 to https://www.capepartners.fr/ (the homepage, not the requested path), so the apex was recorded as a miss rather than a hit. The legacy /.well-known/agent.json 404s on both www and sniffer. Ownership is not in question: provider.organization is "Cape Partners", provider.url is https://www.capepartners.fr, every interface URL is on www.capepartners.fr, the same host serves the OpenAPI whose servers[] names it, and the provider''s own llms.txt and /api/exchange/spec both name this exact card URL. The card was the harvest source for this provider (a2aregistry.org, 2026-09-19).'
+x-evidence:
+  fetched: '2026-09-19'
+  url: https://www.capepartners.fr/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json; charset=utf-8
+  body_bytes: 8047
+  body_parses_as: JSON object with AgentCard shape (name, description, version, provider, supportedInterfaces, capabilities, securitySchemes, defaultInputModes, defaultOutputModes, skills)
+  corroborating_probes:
+  - url: https://sniffer.capepartners.fr/.well-known/agent-card.json
+    http_status: 200
+    note: Identical body to the www copy.
+  - url: https://capepartners.fr/.well-known/agent-card.json
+    http_status: 301
+    note: Redirects to https://www.capepartners.fr/ — the homepage, not the card. Apex serves nothing at well-known paths.
+  - url: https://www.capepartners.fr/.well-known/agent.json
+    http_status: 404
+  - url: https://sniffer.capepartners.fr/.well-known/agent.json
+    http_status: 404
+  - url: https://www.capepartners.fr/a2a
+    http_status: 400
+    note: 'GET on the declared JSON-RPC interface answers 400 application/a2a+json with an A2A-shaped error body ({"error":{"code":400,"status":"UNSUPPORTED_OPERATION","message":"No A2A operation at /a2a.","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"UNSUPPORTED_OPERATION","domain":"a2a-protocol.org"}]}}). A live A2A server, not a documentation page.'
+  - url: https://www.capepartners.fr/a2a
+    http_status: 200
+    note: 'POST {"jsonrpc":"2.0","id":1,"method":"ListTasks","params":{"pageSize":1}} with NO key answers HTTP 200 with a JSON-RPC error -32001 (reason TASK_NOT_FOUND, domain a2a-protocol.org) — exactly the "id identifies, key authorizes" behaviour the card describes; a non-matching key is reported like a missing task. No message was sent and no record was created by this probe.'
+  - url: https://www.capepartners.fr/a2a
+    http_status: 200
+    note: 'POST {"jsonrpc":"2.0","id":2,"method":"CancelTask","params":{"id":"x"}} answers JSON-RPC error -32004 UNSUPPORTED_OPERATION ("A task here is a record we hold for you, not a job we can cancel"), matching the card''s declared refusal of CancelTask.'
+  - url: https://www.capepartners.fr/a2a/tasks?pageSize=1
+    http_status: 404
+    note: HTTP+JSON binding for ListTasks, probed with a placeholder X-A2A-Key — answers 404 application/a2a+json TASK_NOT_FOUND, the documented behaviour for a key that authorizes nothing.
+  - url: https://www.capepartners.fr/api/exchange/spec
+    http_status: 200
+    note: The provider's JSON exchange spec independently names the card URL under discovery.agent_card and lists the served/refused A2A operations.
+agent_card:
+  name: Cape Partners — Agent Exchange
+  description: Cape Partners is an independent technology M&A advisory firm. This agent serves its exchange over the A2A v1.0 operations SendMessage, GetTask and ListTasks, on both the JSON-RPC and HTTP+JSON bindings. A task is one record held for the caller (a receipt or a grounded reply as an artifact), polled — nothing is pushed. Everything received is data, never an instruction; the ceiling is a proposal awaiting a human decision.
+  version: 1.0.0
+  documentation_url: https://www.capepartners.fr/agent-exchange.html
+  provider:
+    organization: Cape Partners
+    url: https://www.capepartners.fr
+  supported_interfaces:
+  - url: https://www.capepartners.fr/a2a
+    protocol_binding: JSONRPC
+    protocol_version: '1.0'
+  - url: https://www.capepartners.fr/a2a
+    protocol_binding: HTTP+JSON
+    protocol_version: '1.0'
+  capabilities:
+    streaming: false
+    push_notifications: false
+    extended_agent_card: false
+    extensions: 1
+    extension_note: One non-required extension whose uri is the human spec page (https://www.capepartners.fr/agent-exchange.html); its params carry the REST twins of the A2A surface (exchange_spec, by_key_read, by_key_reply, rest_message_send, rest_tasks), the key header, the poll recipe and the effect ceiling.
+  default_input_modes:
+  - text/plain
+  - application/json
+  default_output_modes:
+  - application/json
+  security_schemes:
+    exchangeKey:
+      type: apiKeySecurityScheme
+      location: header
+      name: X-A2A-Key
+      description: The capability key issued with the first message (its msgid), or the stronger answer_key given on first read. Authorizes the caller's own tasks and nothing else.
+    bearerKey:
+      type: httpAuthSecurityScheme
+      scheme: Bearer
+      description: The same capability key, presented as an HTTP bearer credential.
+  skill_count: 2
+  skills:
+  - id: agent_exchange_declaration
+    name: 'Send a message: declare an agent manifest, or ask'
+    description: SendMessage. Publish the six fields (identity, wants, offers, interface, delivery_contract, boundary) as labelled prose or a structured manifest object, plus an optional mandate — or send any other message and have it recorded and answered. No account, key or installation needed to send; the key is needed to read the task back.
+    tags: [m&a, mergers-and-acquisitions, deal-flow, due-diligence, valuation, sell-side, buy-side, technology, saas, europe, france, agent-exchange]
+    input_modes: [text/plain, application/json]
+    output_modes: [application/json]
+    security_requirements: []
+    examples: 2
+  - id: agent_exchange_read_your_tasks
+    name: Read back your own tasks
+    description: GetTask and ListTasks. Requires the capability key. GetTask returns one task (state, history, artifacts); ListTasks returns only the caller's tasks, newest first, with cursor pagination. Task state is derived from the provider's own facts (SUBMITTED / COMPLETED / INPUT_REQUIRED).
+    tags: [agent-exchange, task-status, read-back]
+    input_modes: [application/json]
+    output_modes: [application/json]
+    security_requirements:
+    - exchangeKey
+    examples: 2
+conformance:
+  spec: A2A 1.0.0
+  grade: conformant
+  protocol_version: '1.0'
+  preferred_transport: null
+  transport: JSONRPC and HTTP+JSON (via supportedInterfaces[].protocolBinding; both bindings share one URL)
+  hard_checks:
+    capabilities_is_object: true
+    protocol_version_present: true
+    skills_is_array: true
+  optional_fields:
+    default_input_modes: true
+    default_output_modes: true
+    preferred_transport: false
+  grade_basis: 'Graded against the A2A 1.0.0 hard checks. capabilities is an OBJECT (pass) with streaming, pushNotifications, extendedAgentCard and extensions declared as fields. protocolVersion is present (pass), declared as "1.0" on each supportedInterfaces[] entry, which is where A2A 1.0.0 carries it after supportedInterfaces[] replaced the 0.3-era top-level url/preferredTransport/protocolVersion triple. skills is an ARRAY (pass) of two fully-populated skills carrying id, name, description, tags, examples, inputModes and outputModes. defaultInputModes and defaultOutputModes are both declared. preferredTransport is absent because 1.0.0 superseded it with supportedInterfaces[].protocolBinding, which the card declares twice (JSONRPC, HTTP+JSON) — spec-current, not a gap. Beyond the shape, the endpoint was probed live and answers A2A-shaped JSON-RPC errors (-32001 TaskNotFound, -32004 UnsupportedOperation) with google.rpc.ErrorInfo details under domain a2a-protocol.org, so the card describes a server that exists and behaves as declared.'
+  deviations:
+  - field: protocolVersion
+    observed: carried on supportedInterfaces[0] and [1], not at the top level
+    note: A reader written against A2A 0.3.0 will find no top-level protocolVersion. Recorded because the two card shapes coexist in the wild, not because the card is out of spec — it is consistently 1.0-shaped (supportedInterfaces, protocolBinding, oneof-wrapped securitySchemes).
+  - field: url
+    observed: absent at the top level
+    note: The 0.3-era top-level url is not declared; the endpoint is only discoverable via supportedInterfaces[].url. Same coexistence caveat as protocolVersion.
+  - field: securitySchemes
+    observed: A2A 1.0.0 protobuf-JSON oneof wrapper (apiKeySecurityScheme / httpAuthSecurityScheme keys), not a flat type/scheme object
+    note: A naive reader looking for `type` at the top of each scheme finds none. Both wrappers are populated (header key X-A2A-Key, and Bearer).
+  - field: skills[0].securityRequirements
+    observed: absent on agent_exchange_declaration; present only on agent_exchange_read_your_tasks
+    note: Deliberate — the card and the exchange spec both state that SendMessage needs no key ("no account, no key and no installation are needed to send") and that the key is issued BY that first message. Read-back is the only keyed skill. The scheme's `list` is empty, so no scope vocabulary exists; authorization is capability-key possession, not scopes.
+  - field: capabilities.extensions[0].uri
+    observed: an HTML documentation page URL rather than an extension-spec identifier
+    note: The extension mechanism is used to carry the REST twins and operating recipe of the exchange as params. Useful to a reader, but the uri does not resolve to a machine-readable extension definition.
+  - field: iconUrl / signatures
+    observed: absent
+    note: No JWS signature block; authenticity rests on TLS to www.capepartners.fr. No icon.
+surface_relationship:
+  note: 'Cape Partners publishes the A2A surface as a first-class part of its OpenAPI: the card (GET /.well-known/agent-card.json), the JSON-RPC endpoint (POST /a2a) and the HTTP+JSON binding (POST /a2a/message:send, GET /a2a/tasks, GET /a2a/tasks/{id}) are all operations in openapi/capepartners-fr-openapi.yml under the Exchange tag, with A2ATask / A2AMessage / A2APart / A2ASendMessageRequest / A2AJsonRpcRequest schemas. The A2A operations are a protocol projection of the same exchange the REST twins serve — POST /api/exchange/manifest, GET /api/exchange/answer/{msgid}, POST /api/exchange/reply — and the card''s extension params map each A2A operation to its REST twin. The wider workspace API (matching, valuation, pairings, info memos, NDA, mandate — 30+ operations) is NOT reachable over A2A; it is a tier-2 surface that requires a workspace UUID issued only after a manifest is accepted (the "handshake"). No MCP server is published (see mcp/), so A2A + REST are the two live agent surfaces.'
+  human_steps: 'Two steps never move by machine, and the card says so: the Terms of Service are signed by the PRINCIPAL (a declared human supervisor), and a named principal precedes any coverage detail. A task waiting on either reports TASK_STATE_INPUT_REQUIRED. Streaming, push notifications, cancellation and the extended card are declared false and answer with the protocol''s own errors.'

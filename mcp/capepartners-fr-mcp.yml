@@ -1,0 +1,360 @@
+generated: '2026-09-19'
+method: derived
+status: candidate
+source: 'openapi/capepartners-fr-openapi.yml — one candidate tool per non-discovery operation. Searched first: no hosted or stdio MCP server is published (www.capepartners.fr/mcp 404, /.well-known/mcp.json
+  404, /.well-known/mcp/server-card.json 404 on www and sniffer, no MCP mention in llms.txt, llms-full.txt, /api, ai-plugin.json or the agent card; no npm/PyPI package under capepartners; no GitHub organization).'
+summary: Cape Partners ships NO MCP server. Its two live agent surfaces are the REST contract (openapi/) and an A2A 1.0 endpoint (a2a/). This file is a DERIVED candidate tool list an MCP server COULD expose
+  over the REST operations; nothing here is callable as MCP today, and no MCPServer pointer is emitted in apis.yml.
+deployment:
+  mode: none
+  endpoint: null
+  install: null
+  package: null
+  auth: unknown
+  verified: derived
+  note: mode none = derived candidate; nobody ships a server. The REST auth model such a server would have to carry is a workspace UUID path credential plus an exchange capability key (see authentication/),
+    neither of which is OAuth.
+server:
+  name: capepartners-sniffer (candidate)
+  transport: null
+  url: null
+tool_count: 41
+tools:
+- name: post_api_submit
+  description: Register a seller (opportunity) or buyer (investor) inbound lead and get initial matches
+  method: POST
+  path: /api/submit
+  category: Registration
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/submit (overlay operationId postApiSubmit)
+  read_only: false
+  gated: false
+- name: get_api
+  description: 'Agent capability index: service/version/base_url, auth model, discovery links (openapi, llms, ai-plugin), and the key endpoint list'
+  method: GET
+  path: /api
+  category: Discovery
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api (overlay operationId getApi)
+  read_only: true
+  gated: false
+- name: get_api_workspace_by_session_id
+  description: Check whether a workspace UUID already holds visitor data
+  method: GET
+  path: /api/workspace/{session_id}
+  category: Identity
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/workspace/{session_id} (overlay operationId getApiWorkspaceBySessionId)
+  read_only: true
+  gated: true
+- name: post_api_workspace_join
+  description: Create/update a workspace with visitor identity; returns the session UUID to enter the workspace
+  method: POST
+  path: /api/workspace/join
+  category: Identity
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/workspace/join (overlay operationId postApiWorkspaceJoin)
+  read_only: false
+  gated: false
+- name: get_api_session_by_session_id
+  description: 'Load full session: identity, buyer/seller profile, data-quality, and valuation'
+  method: GET
+  path: /api/session/{session_id}
+  category: Identity
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/session/{session_id} (overlay operationId getApiSessionBySessionId)
+  read_only: true
+  gated: true
+- name: post_api_session_by_session_id
+  description: Update session identity and buyer/seller profile (COALESCE upsert keeps existing values)
+  method: POST
+  path: /api/session/{session_id}
+  category: Identity
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/session/{session_id} (overlay operationId postApiSessionBySessionId)
+  read_only: false
+  gated: true
+- name: get_api_matches_by_session_id
+  description: Find suggested matches for the session (buyer→sellers or seller→buyers)
+  method: GET
+  path: /api/matches/{session_id}
+  category: Matching
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/matches/{session_id} (overlay operationId getApiMatchesBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_matched_names_by_session_id
+  description: Reveal non-redacted matched company names for a session
+  method: GET
+  path: /api/matched-names/{session_id}
+  category: Matching
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/matched-names/{session_id} (overlay operationId getApiMatchedNamesBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_seller_name_by_session_id
+  description: Resolve an entity name by ID, but ONLY for entities within the requesting session's scope (its own entity or a pairing counterparty)
+  method: GET
+  path: /api/seller-name/{session_id}
+  category: Matching
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/seller-name/{session_id} (overlay operationId getApiSellerNameBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_valuation_by_session_id
+  description: Return the seller's valuation for the session
+  method: GET
+  path: /api/valuation/{session_id}
+  category: Valuation
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/valuation/{session_id} (overlay operationId getApiValuationBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_pairings_by_session_id
+  description: Return pairings for the session (as buyer or seller), with match score, phase, valuation, and entity details.
+  method: GET
+  path: /api/pairings/{session_id}
+  category: Pairings
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/pairings/{session_id} (overlay operationId getApiPairingsBySessionId)
+  read_only: true
+  gated: true
+- name: post_api_pairings_create
+  description: Create a new pairing (pair-{buyer_id}-{seller_id}) between a buyer and seller.
+  method: POST
+  path: /api/pairings/create
+  category: Pairings
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/pairings/create (overlay operationId postApiPairingsCreate)
+  read_only: false
+  gated: false
+- name: post_api_pairings_update_phase
+  description: Bulk-update deal phase for one or more pairings
+  method: POST
+  path: /api/pairings/update_phase
+  category: Pairings
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/pairings/update_phase (overlay operationId postApiPairingsUpdatePhase)
+  read_only: false
+  gated: false
+- name: post_api_pairings_phase_request
+  description: Answer a pending phase-change request — the other half of the mutual-consent handshake on POST /api/pairings/update_phase
+  method: POST
+  path: /api/pairings/phase-request
+  category: Pairings
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/pairings/phase-request (overlay operationId postApiPairingsPhaseRequest)
+  read_only: false
+  gated: false
+- name: get_api_search_by_session_id
+  description: Manual search of sellers and buyers by name/sector/product
+  method: GET
+  path: /api/search/{session_id}
+  category: Search
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/search/{session_id} (overlay operationId getApiSearchBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_activity_by_session_id
+  description: The session activity feed and its To Do block
+  method: GET
+  path: /api/activity/{session_id}
+  category: Activity
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/activity/{session_id} (overlay operationId getApiActivityBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_interest_signals_by_session_id
+  description: 'Inbound interest signals from counterparties about the entity this session owns: (a) counterparty searches whose results surfaced it, (b) match suggestions it was pushed to counter'
+  method: GET
+  path: /api/interest-signals/{session_id}
+  category: Interest
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/interest-signals/{session_id} (overlay operationId getApiInterestSignalsBySessionId)
+  read_only: true
+  gated: true
+- name: post_api_interest_signals_by_session_id_ack
+  description: Mark interaction signals as reviewed
+  method: POST
+  path: /api/interest-signals/{session_id}/ack
+  category: Interest
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/interest-signals/{session_id}/ack (overlay operationId postApiInterestSignalsBySessionIdAck)
+  read_only: false
+  gated: true
+- name: get_api_deal_flow_by_session_id
+  description: 'The supply-side counterpart of the Interest Signals card: the counterparty universe that matches THIS session''s own mandate, ranked by the canonical fit score (deterministic x sema'
+  method: GET
+  path: /api/deal-flow/{session_id}
+  category: DealFlow
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/deal-flow/{session_id} (overlay operationId getApiDealFlowBySessionId)
+  read_only: true
+  gated: true
+- name: post_api_watchlist
+  description: Pin or unpin a counterparty on this session's Deal Flow watchlist
+  method: POST
+  path: /api/watchlist
+  category: DealFlow
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/watchlist (overlay operationId postApiWatchlist)
+  read_only: false
+  gated: false
+- name: get_api_infomemo_by_session_id
+  description: Generate/retrieve the InfoMemo markdown for the session
+  method: GET
+  path: /api/infomemo/{session_id}
+  category: InfoMemos
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/infomemo/{session_id} (overlay operationId getApiInfomemoBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_infomemo_by_session_id_download
+  description: Download the InfoMemo markdown with appended matched names and NDA block.
+  method: GET
+  path: /api/infomemo/{session_id}/download
+  category: InfoMemos
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/infomemo/{session_id}/download (overlay operationId getApiInfomemoBySessionIdDownload)
+  read_only: true
+  gated: true
+- name: get_api_light_infomemo_by_session_id_by_pair_id
+  description: Generate and stream a light (Cape-branded teaser) InfoMemo PDF for a pairing scoped to the requesting session (the pairing must involve the session's buyer or seller).
+  method: GET
+  path: /api/light-infomemo/{session_id}/{pair_id}
+  category: InfoMemos
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/light-infomemo/{session_id}/{pair_id} (overlay operationId getApiLightInfomemoBySessionIdByPairId)
+  read_only: true
+  gated: true
+- name: get_api_product_analysis_by_session_id_by_pairing_id
+  description: Return seller product analysis for a pairing scoped to the requesting session (the pairing must involve the session's buyer or seller).
+  method: GET
+  path: /api/product-analysis/{session_id}/{pairing_id}
+  category: InfoMemos
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/product-analysis/{session_id}/{pairing_id} (overlay operationId getApiProductAnalysisBySessionIdByPairingId)
+  read_only: true
+  gated: true
+- name: post_api_nda_sign
+  description: Record/request the NDA for a session
+  method: POST
+  path: /api/nda/sign
+  category: Confidentiality
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/nda/sign (overlay operationId postApiNdaSign)
+  read_only: false
+  gated: false
+- name: get_api_nda_text
+  description: Return the full Cape Partners Terms of Service (plain text), the single governing agreement of the Platform — served at this back-compatible endpoint for the consent-modal flows (t
+  method: GET
+  path: /api/nda/text
+  category: Confidentiality
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/nda/text (overlay operationId getApiNdaText)
+  read_only: true
+  gated: false
+- name: get_api_tos_text
+  description: Return the full Cape Partners Terms of Service (plain text)
+  method: GET
+  path: /api/tos/text
+  category: Confidentiality
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/tos/text (overlay operationId getApiTosText)
+  read_only: true
+  gated: false
+- name: post_api_dq_enqueue
+  description: Enqueue high-priority data-quality improvement steps for a seller or buyer for the enrichment worker.
+  method: POST
+  path: /api/dq/enqueue
+  category: DataQuality
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/dq/enqueue (overlay operationId postApiDqEnqueue)
+  read_only: false
+  gated: false
+- name: get_api_mandate_by_session_id
+  description: 'The mandate capability for this session: role (buyer/seller), the embedded Cape Partners mandate template (id, name, intro, section titles), a rendered template_preview with the li'
+  method: GET
+  path: /api/mandate/{session_id}
+  category: Mandate
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/mandate/{session_id} (overlay operationId getApiMandateBySessionId)
+  read_only: true
+  gated: true
+- name: get_api_mandate_by_session_id_preview
+  description: Re-render the mandate template body with live retainer / fee % / deal-scope parameters, so a client reflects the current selections without a full reload.
+  method: GET
+  path: /api/mandate/{session_id}/preview
+  category: Mandate
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/mandate/{session_id}/preview (overlay operationId getApiMandateBySessionIdPreview)
+  read_only: true
+  gated: true
+- name: post_api_mandate_request
+  description: Record a mandate proposal request for a session pairing scope
+  method: POST
+  path: /api/mandate/request
+  category: Mandate
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/mandate/request (overlay operationId postApiMandateRequest)
+  read_only: false
+  gated: false
+- name: post_a2a
+  description: 'A2A protocol v1.0 — the JSON-RPC 2.0 binding (one endpoint, operation names as methods: SendMessage, GetTask, ListTasks)'
+  method: POST
+  path: /a2a
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /a2a (overlay operationId postA2a)
+  read_only: false
+  gated: false
+- name: post_a2a_message_send
+  description: A2A protocol v1.0 — HTTP+JSON binding for SendMessage
+  method: POST
+  path: /a2a/message:send
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /a2a/message:send (overlay operationId postA2aMessageSend)
+  read_only: false
+  gated: false
+- name: get_a2a_tasks
+  description: A2A protocol v1.0 — HTTP+JSON binding for ListTasks
+  method: GET
+  path: /a2a/tasks
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /a2a/tasks (overlay operationId getA2aTasks)
+  read_only: true
+  gated: true
+- name: get_a2a_tasks_by_id
+  description: A2A protocol v1.0 — HTTP+JSON binding for GetTask
+  method: GET
+  path: /a2a/tasks/{id}
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /a2a/tasks/{id} (overlay operationId getA2aTasksById)
+  read_only: true
+  gated: true
+- name: get_api_exchange_spec
+  description: 'Machine-readable form of the agent-exchange spec: how to publish a manifest, the six fields, the effect ceiling, and how you will be answered'
+  method: GET
+  path: /api/exchange/spec
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/exchange/spec (overlay operationId getApiExchangeSpec)
+  read_only: true
+  gated: false
+- name: post_api_exchange_manifest
+  description: Publish an agent manifest
+  method: POST
+  path: /api/exchange/manifest
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/exchange/manifest (overlay operationId postApiExchangeManifest)
+  read_only: false
+  gated: false
+- name: get_api_exchange_answer_by_msgid
+  description: Fetch your exchange thread and any answer, keyed by the msgid from your submission receipt
+  method: GET
+  path: /api/exchange/answer/{msgid}
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /api/exchange/answer/{msgid} (overlay operationId getApiExchangeAnswerByMsgid)
+  read_only: true
+  gated: true
+- name: post_api_exchange_reply
+  description: Answer in-thread using the same key you read with (your msgid or answer_key)
+  method: POST
+  path: /api/exchange/reply
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /api/exchange/reply (overlay operationId postApiExchangeReply)
+  read_only: false
+  gated: false
+- name: get_engage_by_token_thread
+  description: 'Exchange return leg: read what the internal side wrote to the participant a token is bound to'
+  method: GET
+  path: /engage/{token}/thread
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#GET /engage/{token}/thread (overlay operationId getEngageByTokenThread)
+  read_only: true
+  gated: true
+- name: post_engage_by_token_reply
+  description: 'Exchange return leg: answer in-thread on a participant-bound token'
+  method: POST
+  path: /engage/{token}/reply
+  category: Exchange
+  source_operation: openapi/capepartners-fr-openapi.yml#POST /engage/{token}/reply (overlay operationId postEngageByTokenReply)
+  read_only: false
+  gated: true
+not_projected:
+- GET /robots.txt
+- GET /sitemap.xml
+- GET /llms.txt
+- GET /llms-full.txt
+- GET /.well-known/llms.txt
+- GET /.well-known/ai-plugin.json
+- GET /.well-known/agent-card.json
+note: operationIds in source_operation come from overlays/capepartners-fr-openapi-overlay.yaml; the provider spec declares none. No ToolCrosswalk is emitted because there is no MCP or GraphQL surface to
+  bind to.

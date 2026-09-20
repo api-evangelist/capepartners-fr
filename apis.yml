@@ -1,18 +1,68 @@
 aid: capepartners-fr
 name: Cape Partners
-description: 'Cape Partners is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'Cape Partners is an independent M&A advisory firm focused on technology, based in Le Chesnay, France (Cape Partners SAS, SIREN 833 208 960). It operates a deal-flow platform ("Sniffer") that sources and enriches European software companies, matches sellers to strategic and financial buyers with a deterministic-times-semantic fit score, produces preliminary valuations, and lets both sides manage pairings and deal phases in a session-scoped workspace. The platform is agent-first: an OpenAPI 3.1 contract at /openapi.json, a JSON capability index at /api, llms.txt, an AI-plugin discovery manifest, and an A2A 1.0 Agent Card whose SendMessage / GetTask / ListTasks operations are served live at /a2a. External agents take part through an "agent exchange" — publish a six-field manifest with no account or key, then poll for a grounded answer; a workspace UUID is issued only after a human-reviewed handshake, and the Terms of Service are signed by a human principal.'
 url: https://raw.githubusercontent.com/api-evangelist/capepartners-fr/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:a2a-registry
-x-tier: stub
-x-tier-reason: harvest
+x-tier: enriched
+x-tier-reason: full local enrichment pass 2026-09-19 (was a harvest stub from the a2a-registry)
 specificationVersion: '0.20'
 created: '2026-09-19'
 modified: '2026-09-19'
 tags:
-- Company
-apis: []
+- Mergers and Acquisitions
+- Deal Flow
+- Valuation
+- Investment
+- Financial Services
+- Agents
+- A2A
+- France
+- Technology
+- SaaS
+apis:
+- name: Cape Partners Sniffer Agent API
+  description: 'Machine-readable API backing the Cape Partners M&A deal-flow workspace — inbound submission, workspace session and profile management, ranked matching, valuation, pairings and mutual-consent phase changes, deal flow and interest signals, info memos, NDA/Terms signature, data-quality enqueue, and mandate proposals — as an OpenAPI 3.1 contract (47 paths, 48 operations) for autonomous agents. Session-scoped endpoints are keyed by a workspace UUID carried in the URL path; NDA-gated resources additionally require a recorded human signature.'
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://www.capepartners.fr
+  tags:
+  - Mergers and Acquisitions
+  - Deal Flow
+  - Valuation
+  - Matching
+  - Workspace
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted)
+    url: https://www.capepartners.fr/openapi.json
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: Overlay
+    url: overlays/capepartners-fr-openapi-overlay.yaml
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- name: Cape Partners Agent Exchange (A2A)
+  description: 'The A2A 1.0 surface of the Cape Partners agent exchange: SendMessage, GetTask and ListTasks on both the JSON-RPC binding (POST /a2a) and the HTTP+JSON binding (POST /a2a/message:send, GET /a2a/tasks, GET /a2a/tasks/{id}). An agent publishes a six-field manifest (identity, wants, offers, interface, delivery_contract, boundary) or any message and receives a Task whose artifact is the receipt or a grounded reply; the msgid issued with the first message is the capability key (X-A2A-Key or Bearer) for reading tasks back. Streaming, push notifications, cancellation and the extended card are declared unsupported. REST twins exist at POST /api/exchange/manifest, GET /api/exchange/answer/{msgid} and POST /api/exchange/reply.'
+  humanURL: https://www.capepartners.fr/agent-exchange.html
+  baseURL: https://www.capepartners.fr/a2a
+  tags:
+  - A2A
+  - Agents
+  - Agent Exchange
+  - Mergers and Acquisitions
+  properties:
+  - type: AgentCard
+    url: a2a/capepartners-fr-a2a.yml
+  - type: Documentation
+    url: https://www.capepartners.fr/agent-exchange.html
+  - type: APIReference
+    url: https://www.capepartners.fr/api/exchange/spec
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +70,41 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://capepartners.fr/
+  url: https://www.capepartners.fr/
+- type: Documentation
+  url: https://www.capepartners.fr/llms.txt
+- type: APIReference
+  url: https://www.capepartners.fr/api
+- type: TermsOfService
+  url: https://www.capepartners.fr/tos
+- type: SignUp
+  url: https://www.capepartners.fr/new-workspace.html
+- type: LinkedIn
+  url: https://www.linkedin.com/company/capepartners/
+- type: LLMsTxt
+  url: llms/capepartners-fr-llms.txt
+- type: WellKnown
+  url: well-known/capepartners-fr-well-known.yml
+- type: AgentCard
+  url: a2a/capepartners-fr-a2a.yml
+- type: DomainSecurity
+  url: security/capepartners-fr-domain-security.yml
+- type: Authentication
+  url: authentication/capepartners-fr-authentication.yml
+- type: Conventions
+  url: conventions/capepartners-fr-conventions.yml
+- type: Conformance
+  url: conformance/capepartners-fr-conformance.yml
+- type: Lifecycle
+  url: lifecycle/capepartners-fr-lifecycle.yml
+- type: Plans
+  url: plans/capepartners-fr-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/capepartners-fr-rate-limits.yml
+- type: AgentSkill
+  url: skills/_index.yml
+x-enrichment:
+  date: '2026-09-19'
+  status: enriched
+  artifacts_added: 23
+  pass: local-v3

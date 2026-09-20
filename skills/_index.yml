@@ -1,0 +1,37 @@
+generated: '2026-09-19'
+method: generated
+source: Packaged Agent Skills generated from openapi/capepartners-fr-openapi.yml, a2a/capepartners-fr-agent-card.json and the provider docs (agent-exchange.html, /api/exchange/spec, llms.txt). The provider
+  spec declares no operationIds, so every step cites the verbatim METHOD + PATH and the overlay-assigned operationId from overlays/capepartners-fr-openapi-overlay.yaml. No provider-published skills or AGENTS.md
+  were found (/.well-known/agent-skills/index.json 404).
+skills:
+- file: capepartners-fr-publish-manifest-and-poll.md
+  name: Publish an agent manifest and poll for the answer (exchange tier 1)
+  api: openapi/capepartners-fr-openapi.yml
+  operations:
+  - POST /api/exchange/manifest
+  - GET /api/exchange/answer/{msgid}
+  - POST /api/exchange/reply
+  - GET /api/exchange/spec
+- file: capepartners-fr-a2a-send-and-read-tasks.md
+  name: Send a message and read your tasks over A2A 1.0
+  api: openapi/capepartners-fr-openapi.yml
+  operations:
+  - POST /a2a
+  - POST /a2a/message:send
+  - GET /a2a/tasks
+  - GET /a2a/tasks/{id}
+  - GET /.well-known/agent-card.json
+- file: capepartners-fr-open-workspace-and-read-deal-flow.md
+  name: Open a workspace and read your masked deal flow (tier 2)
+  api: openapi/capepartners-fr-openapi.yml
+  operations:
+  - POST /api/workspace/join
+  - GET /api/tos/text
+  - POST /api/session/{session_id}
+  - GET /api/session/{session_id}
+  - GET /api/matches/{session_id}
+  - GET /api/deal-flow/{session_id}
+  - GET /api/valuation/{session_id}
+  - GET /api/pairings/{session_id}
+  - GET /api/activity/{session_id}
+  - POST /api/nda/sign

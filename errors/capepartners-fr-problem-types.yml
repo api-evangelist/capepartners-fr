@@ -1,0 +1,64 @@
+generated: '2026-09-19'
+method: searched
+format: custom-json-error-envelope
+source: Derived from every 4xx response declared in openapi/capepartners-fr-openapi.yml (48 operations, 14 with 400, 1 with 401, 15 with 403, 15 with 404, 3 with 409, 2 with 413, 1 with 422, 5 with 429; no 5xx declared), enriched from the guards block at https://www.capepartners.fr/api and /.well-known/ai-plugin.json, and from live unauthenticated responses observed 2026-09-19 on /a2a, /a2a/tasks and /api/exchange/answer/{msgid}. Cape Partners does NOT use RFC 9457 application/problem+json.
+envelope:
+  media_type: application/json
+  shape: '{ "error": string (required), "detail"?: string }  — schema components.schemas.ApiError'
+  extra_fields_seen:
+  - nda_required (boolean, 403 on NDA-gated reads)
+  - fix_required (string naming the field to correct, 403 on reveal with an unvalidated email)
+  - retry_after (integer seconds, 429)
+  - pair_id (409 on POST /api/pairings/create when the pairing already exists)
+  - found / hint / spec_url (404 on GET /api/exchange/answer/{msgid} — observed live)
+a2a_envelope:
+  media_type: application/a2a+json
+  jsonrpc_shape: '{ "jsonrpc": "2.0", "id", "error": { "code": int, "message": string, "data": [ { "@type": "type.googleapis.com/google.rpc.ErrorInfo", "reason", "domain": "a2a-protocol.org", "metadata": { "timestamp" } } ] } }  — returned on HTTP 200 per A2A §9.5'
+  http_json_shape: '{ "error": { "code": int, "status": string, "message": string, "details": [ ErrorInfo ] } }  — HTTP status mirrors error.code'
+  codes_observed:
+  - {jsonrpc_code: -32001, reason: TASK_NOT_FOUND, http: 404, meaning: The task id does not exist, or is not accessible with the key presented. A non-matching key is reported exactly like a missing task.}
+  - {jsonrpc_code: -32004, reason: UNSUPPORTED_OPERATION, http: 400, meaning: 'CancelTask, SendStreamingMessage, SubscribeToTask, GetExtendedAgentCard — declared false in the card and refused.'}
+  - {reason: PUSH_NOTIFICATION_NOT_SUPPORTED, meaning: Every *PushNotificationConfig operation — the provider never pushes (documented at /api/exchange/spec; not exercised).}
+problems:
+- status: 400
+  title: Bad request / invalid session identifier
+  meaning: Empty or invalid body; missing required fields (e.g. buyer_id and seller_id on pairing create, pair_ids or an invalid phase on update_phase, entity_type/entity_id on watchlist, key or text on exchange reply); or a malformed session identifier — UUID-v4 is required and is checked before anything else is touched. On /engage/{token}/*, 400 means the token is not bound to an exchange participant.
+  remediation: Validate the UUID-v4 shape client-side; send the documented required fields; for /engage, obtain a participant-bound token from the operator.
+  source_operations: [POST /api/submit, POST /api/workspace/join, POST /api/pairings/create, POST /api/pairings/update_phase, POST /api/pairings/phase-request, POST /api/watchlist, POST /api/nda/sign, 'GET /api/mandate/{session_id}', POST /api/mandate/request, POST /a2a, POST /api/exchange/manifest, POST /api/exchange/reply, 'GET /engage/{token}/thread', 'POST /engage/{token}/reply']
+- status: 401
+  title: Unknown or revoked token
+  meaning: The engage token is unknown or has been revoked by the operator.
+  remediation: Request a new token from the operator; the tier-1 exchange thread keyed by msgid remains readable without a token.
+  source_operations: ['POST /engage/{token}/reply']
+- status: 403
+  title: Guard rejection
+  meaning: 'One of five documented guards: (a) cross-origin — a present Origin/Referer is not a Cape Partners first-party host; (b) Turnstile — human verification failed on POST /api/submit or POST /api/workspace/join with no human supervisor declared; (c) handshake_required — an agent asked for a NEW workspace UUID without an accepted exchange manifest key; workspace_not_yours — the uuid names an existing workspace this participant does not own; (d) NDA — nda_required:true until a human-approved signature is recorded, then fix_required if the registered email is not a validated mailbox; (e) scope — the pairing/entity is not scoped to this session, or the wrong party answered a phase request (only the counterparty confirms/dismisses, only the requester cancels).'
+  remediation: Send no Origin/Referer from a headless agent; declare a human supervisor; complete the exchange handshake before joining; have the principal sign the Terms; fix the data named in fix_required rather than retrying the gate.
+  source_operations: [POST /api/submit, 'GET /api/workspace/{session_id}', POST /api/workspace/join, 'GET /api/session/{session_id}', 'GET /api/matches/{session_id}', 'GET /api/seller-name/{session_id}', 'GET /api/valuation/{session_id}', 'GET /api/pairings/{session_id}', POST /api/pairings/phase-request, POST /api/watchlist, 'GET /api/light-infomemo/{session_id}/{pair_id}', 'GET /api/product-analysis/{session_id}/{pairing_id}', 'GET /api/mandate/{session_id}', POST /api/mandate/request]
+- status: 404
+  title: Not found
+  meaning: 'Workspace, session, entity, counterparty, info memo or product analysis not found; no buyer or seller bound to the session; no pending phase request for the pairing; or — on the exchange/A2A surface — no record for that key (a task id alone is never enough; a non-matching key reads as not found). Observed live: {"found":false,"error":"no record for that key","hint":"Use the exact msgid from your submission receipt, or the answer_key you were given. Msgids are case-sensitive.","spec_url":"https://www.capepartners.fr/agent-exchange.html"}.'
+  remediation: Register a buyer/seller profile first (POST /api/session/{session_id}); for exchange reads use the exact, case-sensitive msgid or answer_key.
+  source_operations: ['GET /api/workspace/{session_id}', 'GET /api/session/{session_id}', 'GET /api/matches/{session_id}', 'GET /api/seller-name/{session_id}', 'GET /api/valuation/{session_id}', 'GET /api/pairings/{session_id}', POST /api/pairings/phase-request, POST /api/watchlist, 'GET /api/infomemo/{session_id}/download', 'GET /api/product-analysis/{session_id}/{pairing_id}', 'GET /api/mandate/{session_id}/preview', 'GET /a2a/tasks/{id}', 'GET /api/exchange/answer/{msgid}', POST /api/exchange/reply]
+- status: 409
+  title: Conflict
+  meaning: Pairing already exists (response carries the existing pair_id); the phase request was already resolved or never raised; or no buyer/seller is bound to the session yet for a mandate request.
+  remediation: Reuse the returned pair_id; read GET /api/pairings/{session_id} for the current phase_request state; bind a profile before requesting a mandate.
+  source_operations: [POST /api/pairings/create, POST /api/pairings/phase-request, POST /api/mandate/request]
+- status: 413
+  title: Body too large
+  meaning: Exchange manifest or reply body exceeds 64 KB.
+  remediation: Keep the manifest to the six labelled fields; attach nothing.
+  source_operations: [POST /api/exchange/manifest, POST /api/exchange/reply]
+- status: 422
+  title: Manifest recorded but one or more checks FAILED
+  meaning: The manifest was accepted for the record but failed a field check (the receipt carries a PASS/FAIL verdict per field); the msgid is still issued.
+  remediation: Read the per-field verdict in the receipt and republish with the failing field corrected — "None" is a valid value for any field, an overstated field is not.
+  source_operations: [POST /api/exchange/manifest]
+- status: 429
+  title: Too many requests
+  meaning: 'Rolling per-IP limits — 60 requests / 60 s per endpoint family on confidential reads; on the exchange, max 5 manifests, 30 lookups and 20 replies per IP per hour. Body: {"error":"Too many requests — try again later","retry_after":<seconds>}. No RateLimit-* or Retry-After HEADERS are documented; the signal is in the body.'
+  remediation: Honour retry_after; poll the exchange every 1-5 minutes (the provider says anything faster "is throttled and buys nothing").
+  source_operations: ['GET /api/mandate/{session_id}', POST /api/mandate/request, POST /api/exchange/manifest, 'GET /api/exchange/answer/{msgid}', POST /api/exchange/reply]
+undeclared:
+  note: The spec declares no 5xx responses and no 401 on the workspace API (an unauthorised session reads as 403 or 404 by design — "a non-matching key is reported exactly like a missing task"). Operations with no error responses declared at all — GET /api/search, /api/activity, /api/interest-signals, /api/deal-flow, /api/infomemo, /api/matched-names, POST /api/dq/enqueue, POST /api/session, POST /a2a/message:send, GET /a2a/tasks — are still subject to the five guards above per the /api guards block.

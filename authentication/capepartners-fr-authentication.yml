@@ -1,0 +1,102 @@
+generated: '2026-09-19'
+method: searched
+source: openapi/capepartners-fr-openapi.yml (securitySchemes) upgraded from the provider's own auth documentation — https://www.capepartners.fr/api (auth + guards blocks), https://www.capepartners.fr/.well-known/ai-plugin.json (auth.instructions), https://www.capepartners.fr/llms.txt, https://www.capepartners.fr/agent-exchange.html and the Agent Card securitySchemes.
+docs: https://www.capepartners.fr/api
+spec: openapi/capepartners-fr-openapi.yml
+summary:
+  types:
+  - apiKey
+  api_key_in:
+  - path
+  - header
+  oauth2_flows: []
+  transport: HTTPS only; Cloudflare in front; Referrer-Policy strict-origin-when-cross-origin on every response
+  note: 'No API key at any tier and no OAuth. The provider''s auth model (its own words, /api and ai-plugin.json) is "path-capability-token + NDA": a workspace session UUID-v4 carried in the URL path is the credential for the workspace API, a recorded human NDA/Terms signature is a second precondition for confidential resources, and the agent exchange / A2A surface uses a separate capability key (the msgid issued with the first message, or the answer_key given on first read) sent as X-A2A-Key or a Bearer token. The OpenAPI models the first two as apiKey-in-header schemes only because securitySchemes cannot express a path credential — the header names X-Session-Id and X-Nda-Signed are NOT literal headers, and the spec says so in each description.'
+schemes:
+- name: SessionToken
+  type: apiKey
+  in: path
+  parameter: '{session_id}'
+  declared_in_spec_as: apiKey in header X-Session-Id (documentary only)
+  description: The workspace session UUID is a capability token carried in the URL PATH. A valid request must present a well-formed UUID-v4 in the {session_id} path segment AND either no Origin/Referer or a first-party one (capepartners.fr, www.capepartners.fr, sniffer.capepartners.fr, localhost, 127.0.0.1). A malformed id answers 400 "Invalid session identifier"; a known-foreign Origin/Referer answers 403 "Cross-origin request rejected"; a headless agent should simply send no Origin/Referer. Applies to every /api/*/{session_id} operation and to body-keyed writes that carry session_id.
+  issued_by: POST /api/workspace/join (returns session_id / uuid). An agent (no Turnstile token) must present an ACCEPTED exchange manifest key as exchange_key before a NEW uuid is issued — otherwise 403 handshake_required. A join never takes over an existing workspace (403 workspace_not_yours).
+  sources:
+  - openapi/capepartners-fr-openapi.yml
+  - https://www.capepartners.fr/api
+  - https://www.capepartners.fr/.well-known/ai-plugin.json
+- name: NdaSigned
+  type: precondition
+  in: server-side
+  parameter: nda_signatures record for {session_id}
+  declared_in_spec_as: apiKey in header X-Nda-Signed (documentary only)
+  description: 'NDA-gated resources — GET /api/matched-names/{session_id}, GET /api/seller-name/{session_id}, GET /api/infomemo/{session_id}, GET /api/infomemo/{session_id}/download, and GET /api/search/{session_id} — serve data only after a signature is recorded via POST /api/nda/sign. Unsigned answers 403 with nda_required:true. A signature alone is not sufficient: the session''s registered email must also be a validated mailbox (fix_required names the field). Signing requires a declared HUMAN supervisor bound at registration; an agent-initiated signature is recorded as pending and unlocks nothing until the supervisor approves via an emailed link.'
+  sources:
+  - openapi/capepartners-fr-openapi.yml
+  - https://www.capepartners.fr/api
+  - https://www.capepartners.fr/llms.txt
+- name: exchangeKey
+  type: apiKey
+  in: header
+  parameter: X-A2A-Key
+  surface: 'A2A (POST /a2a, POST /a2a/message:send, GET /a2a/tasks, GET /a2a/tasks/{id}) and the REST twins (GET /api/exchange/answer/{msgid}, POST /api/exchange/reply body.key)'
+  description: 'The capability key issued when an agent sends its first message — its msgid — or the stronger answer_key given on first read. Authorizes the caller''s own tasks/thread and nothing else. "The id identifies, the key authorizes": a task id alone is never enough, and a non-matching key is reported exactly like a missing task (TASK_NOT_FOUND / 404 "no record for that key"). Sending the first message needs no key at all.'
+  declared_in: a2a/capepartners-fr-agent-card.json (securitySchemes.exchangeKey, apiKeySecurityScheme)
+  sources:
+  - a2a/capepartners-fr-agent-card.json
+  - https://www.capepartners.fr/agent-exchange.html
+- name: bearerKey
+  type: http
+  scheme: bearer
+  parameter: 'Authorization: Bearer <msgid or answer_key>'
+  surface: A2A
+  description: The same exchange capability key, presented as an HTTP bearer credential instead of X-A2A-Key.
+  declared_in: a2a/capepartners-fr-agent-card.json (securitySchemes.bearerKey, httpAuthSecurityScheme)
+  sources:
+  - a2a/capepartners-fr-agent-card.json
+- name: engageToken
+  type: apiKey
+  in: path
+  parameter: '{token}'
+  surface: 'GET /engage/{token}/thread, POST /engage/{token}/reply, GET /engage/{token}/matches, GET /engage/{token}/summary'
+  description: An opaque, operator-issued token bound to an exchange participant (issued by POST /engage/issue, admin-gated). Gives read-only assistants that cannot POST or hold a session a UUID-free view of a thread or of pre-NDA redacted matches. An unbound token answers 400; an unknown or revoked token answers 401. The raw session UUID is never exposed through this gateway.
+  sources:
+  - openapi/capepartners-fr-openapi.yml
+  - https://www.capepartners.fr/engage
+  - https://www.capepartners.fr/llms.txt
+- name: turnstile
+  type: human-verification
+  in: body
+  parameter: turnstileToken (optional) or supervisor {name, email, company}
+  surface: POST /api/submit, POST /api/workspace/join
+  description: Registration is human-gated by Cloudflare Turnstile. A human solving the widget sends turnstileToken, which the server verifies when present (403 on failure). An agent POSTing directly sends none and is classified as an agent; POST /api/submit then requires a declared human supervisor in the body ({"supervisor":{"name","email","company"}}) or answers 403 "Human verification failed". Consumer webmail addresses (gmail/outlook/hotmail/yahoo) are rejected on join — a verified business email is required.
+  sources:
+  - https://www.capepartners.fr/api
+  - https://www.capepartners.fr/llms.txt
+guards:
+  uuid: 400 — Invalid session identifier (UUID-v4 required), checked before anything else is touched
+  cross_origin: 403 — a present Origin/Referer must be a Cape Partners first-party host; absent is allowed
+  rate_limit: 429 — rolling per-IP 60 requests / 60 s per endpoint family on confidential reads, retry_after (seconds) in the JSON body
+  nda: 403 — nda_required:true until a human-approved signature is recorded; then the registered email must be a validated mailbox
+  turnstile: 403 — Human verification failed on POST /api/submit and POST /api/workspace/join unless a human supervisor is declared
+credentials:
+  - id: workspace-session-uuid
+    where: URL path segment {session_id} (and body session_id on some writes)
+    prefix: null
+    format: UUID v4
+    use: Every workspace operation (session, matches, valuation, pairings, deal flow, interest signals, activity, info memos, mandate)
+    issued_by: POST /api/workspace/join
+    note: 'The provider''s homepage tells agents to "treat it like a password" — anyone holding the UUID can read name, email, company and financials. Do not log it or put it in a Referer (the server sets Referrer-Policy strict-origin-when-cross-origin for this reason).'
+  - id: exchange-key
+    where: X-A2A-Key header, Authorization Bearer, or body.key on POST /api/exchange/reply
+    prefix: null
+    format: msgid from the submission receipt, or answer_key from the first read
+    use: Reading and answering the agent's own exchange thread / A2A tasks; presented as exchange_key on POST /api/workspace/join to upgrade to a workspace
+    issued_by: The first SendMessage / POST /api/exchange/manifest (no credential needed to obtain it)
+  - id: engage-token
+    where: URL path segment {token}
+    prefix: null
+    format: opaque
+    use: Read-only broker gateway for assistants that cannot POST
+    issued_by: Operator, out of band (POST /engage/issue is admin-gated)
+oauth: null
+scopes: null

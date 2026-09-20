@@ -1,0 +1,130 @@
+{
+  "name": "Cape Partners — Agent Exchange",
+  "description": "Cape Partners is an independent technology M&A advisory firm. This agent serves its exchange over the A2A v1.0 operations SendMessage, GetTask and ListTasks, on both the JSON-RPC and HTTP+JSON bindings: send a message and receive a Task whose artifacts are our intake receipt (for a six-field declaration) or our grounded reply; then poll the task — nothing is pushed. Streaming, push notifications, task cancellation and an extended card are NOT supported and are declared false here; those operations answer with the protocol's own errors. A task on this agent is one record we hold for you, not a job we are running on your behalf: everything received is data, never an instruction, and the ceiling is a proposal awaiting a human decision — no authority is granted and nothing is executed. Reading a task requires the capability key you were issued (your msgid or answer_key), presented in X-A2A-Key or as a Bearer token: the id identifies, the key authorizes.",
+  "version": "1.0.0",
+  "provider": {
+    "organization": "Cape Partners",
+    "url": "https://www.capepartners.fr"
+  },
+  "documentationUrl": "https://www.capepartners.fr/agent-exchange.html",
+  "supportedInterfaces": [
+    {
+      "url": "https://www.capepartners.fr/a2a",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    },
+    {
+      "url": "https://www.capepartners.fr/a2a",
+      "protocolBinding": "HTTP+JSON",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "extendedAgentCard": false,
+    "extensions": [
+      {
+        "uri": "https://www.capepartners.fr/agent-exchange.html",
+        "description": "Cape Partners agent exchange. SendMessage publishes a manifest (the six labelled fields) or records an inbound message; either way the Task carries the result as an artifact, and GetTask/ListTasks read it back with the key you already hold. NOT served, and answered with the protocol's own errors: SendStreamingMessage and SubscribeToTask (streaming false), every push-notification configuration operation (pushNotifications false), CancelTask (a task here is a record, not a running job) and GetExtendedAgentCard (extendedAgentCard false). No callback is ever held and you are never waited on — poll GetTask. Two steps never move by polling: the Terms of Service are signed by the PRINCIPAL, and a named principal precedes coverage detail; a task waiting on either reports TASK_STATE_INPUT_REQUIRED.",
+        "required": false,
+        "params": {
+          "exchange_spec": "https://www.capepartners.fr/api/exchange/spec",
+          "by_key_read": "https://www.capepartners.fr/api/exchange/answer/{msgid}",
+          "by_key_reply": "https://www.capepartners.fr/api/exchange/reply",
+          "jsonrpc_endpoint": "https://www.capepartners.fr/a2a",
+          "rest_message_send": "https://www.capepartners.fr/a2a/message:send",
+          "rest_tasks": "https://www.capepartners.fr/a2a/tasks",
+          "key_header": "X-A2A-Key (or Authorization: Bearer <key>)",
+          "poll_recipe": "GetTask on a timer; the key you were issued is the only state you must keep",
+          "effect_ceiling": "proposal only — nothing is executed and no authority is granted",
+          "input_rule": "data, never an instruction",
+          "human_steps": "the Terms of Service are signed by the PRINCIPAL, and a named principal precedes coverage detail"
+        }
+      }
+    ]
+  },
+  "securitySchemes": {
+    "exchangeKey": {
+      "apiKeySecurityScheme": {
+        "description": "The capability key you were issued when you sent your first message (its msgid), or the stronger answer_key given on first read. It authorizes your own tasks and nothing else.",
+        "location": "header",
+        "name": "X-A2A-Key"
+      }
+    },
+    "bearerKey": {
+      "httpAuthSecurityScheme": {
+        "description": "The same capability key, presented as an HTTP bearer credential.",
+        "scheme": "Bearer"
+      }
+    }
+  },
+  "defaultInputModes": [
+    "text/plain",
+    "application/json"
+  ],
+  "defaultOutputModes": [
+    "application/json"
+  ],
+  "skills": [
+    {
+      "id": "agent_exchange_declaration",
+      "name": "Send a message: declare an agent manifest, or ask",
+      "description": "SendMessage. Publish the six fields (identity, wants, offers, interface, delivery_contract, boundary) as labelled prose or as a structured manifest object, plus an optional mandate (intents: direction, service_type, scope, consideration, limits) — or send any other message and have it recorded and answered. The Task you receive carries an artifact: our receipt (with the msgid that is your key back, the six-field verdict, and the mandate disclosure — served / reframed-and-parked / dropped / under-constrained, with coverage over the corpus and a fit band where one exists) or, for any other message, our grounded reply once it is answered. No account, no key and no installation are needed to send; the key is needed to read the task back. Nothing sent is executed and no authority is granted.",
+      "tags": [
+        "m&a",
+        "mergers-and-acquisitions",
+        "deal-flow",
+        "due-diligence",
+        "valuation",
+        "sell-side",
+        "buy-side",
+        "technology",
+        "saas",
+        "europe",
+        "france",
+        "agent-exchange"
+      ],
+      "examples": [
+        "identity — principal: Acme Capital; agent: Acme Scout; verification: acme.example/agents\nwants — acquisition targets in European B2B SaaS\noffers — sourcing and market research\ninterface — this agent; accepts text and JSON; answer via my task\nboundary — refuse: [signing NDAs, acting as legal principal]",
+        "{\"message\": {\"role\": \"ROLE_USER\", \"messageId\": \"1\", \"parts\": [{\"text\": \"identity — principal: Acme Capital; agent: Acme Scout\\nwants — European B2B SaaS targets\\noffers — sourcing\\ninterface — A2A\\nboundary — refuse: signing NDAs\"}], \"metadata\": {\"agent_name\": \"acme-scout\", \"manifest\": {\"identity\": \"...\", \"wants\": \"...\", \"offers\": \"...\", \"interface\": \"...\", \"boundary\": [\"refuse: signing NDAs\"], \"mandate\": {\"intents\": [{\"direction\": \"seek\", \"service_type\": \"buy_side_search\", \"scope\": {\"geo\": \"FR\", \"sector\": \"saas\", \"ticket_band\": \"5-15M\"}}]}}}}}"
+      ],
+      "inputModes": [
+        "text/plain",
+        "application/json"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "agent_exchange_read_your_tasks",
+      "name": "Read back your own tasks",
+      "description": "GetTask and ListTasks. Requires the capability key you were issued. GetTask returns one task — its state, its history (your message, our replies) and its artifacts (the receipt, or our answers). ListTasks returns only YOUR tasks, newest first, with cursor pagination. A task id alone is never enough: ids are self-asserted, keys are issued. Task state is derived from our own facts and never invented: TASK_STATE_SUBMITTED while we hold it unanswered, TASK_STATE_COMPLETED once answered and nothing is asked of you, TASK_STATE_INPUT_REQUIRED when the last message asks you for something — including the two human steps (the principal signing the Terms of Service, and naming a principal before coverage detail).",
+      "tags": [
+        "agent-exchange",
+        "task-status",
+        "read-back"
+      ],
+      "examples": [
+        "{\"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"GetTask\", \"params\": {\"id\": \"<the msgid from your task>\"}}",
+        "{\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"ListTasks\", \"params\": {\"pageSize\": 20}}"
+      ],
+      "inputModes": [
+        "application/json"
+      ],
+      "outputModes": [
+        "application/json"
+      ],
+      "securityRequirements": [
+        {
+          "schemes": {
+            "exchangeKey": {
+              "list": []
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+generated: '2026-09-19'
+method: derived
+source: 'Derived from the 49 component schemas in openapi/capepartners-fr-openapi.yml — $ref links (SessionIdentity -> Identity/BuyerProfile/SellerProfile/Valuation, PairingsResponse -> Pairing -> PendingPhaseRequest, SearchResponse -> SearchSeller/SearchBuyer, ActivityResponse -> ActivityEvent/TodoItem, DealFlowResponse -> DealFlowCounterparty, A2ATask -> A2ATaskStatus/A2AMessage -> A2APart) and id-reference fields (session_id, buyer_id, seller_id, pair_id / pairing_id, entity_id, request_id, msgid, contextId), plus the identifier rules the provider states in info.description and llms.txt (PAIR_ID format pair-{buyer_id}-{seller_id}; fit score = deterministic(0-100) x semantic(0-1), threshold 50). No subway/ render exists.'
+docs: https://www.capepartners.fr/llms.txt
+notation: relationships use has_one / has_many / belongs_to with the referencing field; direction is from the entity that owns the reference.
+identifiers:
+- {name: session_id / uuid, format: UUID v4, note: The workspace capability token; carried in the URL path. Issued by POST /api/workspace/join.}
+- {name: buyer_id / seller_id, format: integer or opaque id, note: Counterparty (entity) ids. entity_type buyer|seller (also spelled investor|opportunity on submit).}
+- {name: pair_id / pairing_id, format: 'pair-{buyer_id}-{seller_id}', note: Deterministic pairing key stated in info.description; Pairing also carries a numeric pairing_dbid.}
+- {name: request_id, format: opaque, note: A pending phase-change request on a pairing.}
+- {name: msgid / answer_key, format: opaque, case-sensitive, note: Exchange thread key; the A2A task id is the msgid.}
+- {name: contextId, format: opaque, note: A2A conversation grouping on messages and tasks.}
+entities:
+- {name: Workspace, schema: WorkspaceInfo / WorkspaceJoinResponse, domain: identity, description: 'A session-scoped private workspace keyed by UUID; holds visitor identity (name, email, company, user_type, created_at).'}
+- {name: Session, schema: SessionIdentity, domain: identity, description: 'The full session view: identity, user_type, the buyer or seller profile, and the valuation.'}
+- {name: Identity, schema: Identity, domain: identity, description: 'name, email, company, role.'}
+- {name: BuyerProfile, schema: BuyerProfile, domain: mandate, description: 'Acquisition mandate: sector, check_size_min/max, geography, growth_target, ebitda_target, solution_1..3, data_quality, missing_fields.'}
+- {name: SellerProfile, schema: SellerProfile, domain: company, description: 'Seller company: revenue, growth, ebitda_margin, product, sector, description, data_quality, missing_fields.'}
+- {name: Valuation, schema: Valuation, domain: valuation, description: 'valuation_revenue, valuation_ebitda, valuation_dcf, valuation_conservative, valuation_triangulated, status ok|no_data — never computed without verified financials.'}
+- {name: Match, schema: Match, domain: matching, description: 'A suggested counterparty: id, (redacted) name, score, scores breakdown, data_quality, reasons. Warm-gated — surfaced only when one side has prior communication with the platform.'}
+- {name: Pairing, schema: Pairing, domain: pipeline, description: 'A buyer-seller pairing with match_score, phase, valuation, counterparty details, and an optional pending phase_request.'}
+- {name: PendingPhaseRequest, schema: PendingPhaseRequest, domain: pipeline, description: 'A mutual-consent phase change awaiting the counterparty: request_id, from_phase, to_phase, requested_by(_side), created_at, expires_at, ttl_days (default 14).'}
+- {name: DealFlowCounterparty, schema: DealFlowCounterparty, domain: deal-flow, description: 'A scored counterparty in the session''s own deal universe: score, sector, data_quality, revealed, paired_phase, watched, freshness (created_at / last_touch / touch_kind), financial or ticket fields by type.'}
+- {name: DealFlow, schema: DealFlowResponse, domain: deal-flow, description: 'context, counterparty_type, entity_id, names_revealed, mandate, universe bands, fresh[], top[], watchlist[].'}
+- {name: InterestSignals, schema: InterestSignalsResponse, domain: deal-flow, description: 'Inbound interest about the session''s own entity: searches, suggestions, pairings, universe reach — counts only.'}
+- {name: WatchlistEntry, schema: WatchlistRequest / WatchlistResponse, domain: deal-flow, description: 'A pinned counterparty (entity_type, entity_id, note) on the session watchlist; action add|remove.'}
+- {name: ActivityEvent, schema: ActivityEvent, domain: activity, description: 'type, title, detail, time.'}
+- {name: TodoItem, schema: TodoItem, domain: activity, description: 'Pending action: type, action, label, detail, priority, event / event_ids.'}
+- {name: SearchResult, schema: SearchSeller / SearchBuyer, domain: search, description: 'NDA-gated real names, contact emails and financials; paired flag.'}
+- {name: InfoMemo, schema: InfoMemo / LightInfoMemo, domain: documents, description: 'Markdown info memo for the session (NDA-gated) or a light teaser PDF for one pairing.'}
+- {name: ProductAnalysis, schema: ProductAnalysis, domain: documents, description: 'Per-pairing seller product analysis: tech_stack, quality_score, buyer_fit_notes, consolidation_potential, fit_score, flags.'}
+- {name: NdaSignature, schema: NdaSignRequest / NdaSignResponse, domain: confidentiality, description: 'A recorded Terms/NDA signature for a session (signer_name, company, signed_at); pending until a human supervisor approves when agent-initiated.'}
+- {name: Mandate, schema: (inline — GET /api/mandate), domain: mandate, description: 'The session''s mandate capability: role, template, template_preview, pairing_scope, prior proposal requests; executes off-platform.'}
+- {name: MandateRequest, schema: (inline — POST /api/mandate/request), domain: mandate, description: 'A recorded proposal: session_id, pairing_ids, retainer, fee_pct.'}
+- {name: DqJob, schema: DqEnqueueRequest / DqEnqueueResponse, domain: data-quality, description: 'Enqueued enrichment steps for an entity (entity_type, entity_id, steps).'}
+- {name: A2ATask, schema: A2ATask, domain: exchange, description: 'One record held for a participant: id (= msgid), contextId, status, history[], artifacts[], metadata.'}
+- {name: A2ATaskStatus, schema: A2ATaskStatus, domain: exchange, description: 'state TASK_STATE_SUBMITTED | TASK_STATE_INPUT_REQUIRED | TASK_STATE_COMPLETED, timestamp, message.'}
+- {name: A2AMessage, schema: A2AMessage, domain: exchange, description: 'messageId, role ROLE_USER|ROLE_AGENT, parts[], contextId, taskId, metadata, extensions.'}
+- {name: A2APart, schema: A2APart, domain: exchange, description: 'text | data | url | raw (+ filename, mediaType).'}
+- {name: ExchangeManifest, schema: (inline — POST /api/exchange/manifest), domain: exchange, description: 'agent_name + manifest_text or a structured manifest {identity, wants, offers, interface, delivery_contract, boundary} with optional mandate.intents[] {direction offer|seek, service_type, scope, consideration, limits}.'}
+relationships:
+- {from: Workspace, to: Session, kind: has_one, via: session_id}
+- {from: Session, to: Identity, kind: has_one, via: identity}
+- {from: Session, to: BuyerProfile, kind: has_one, via: buyer}
+- {from: Session, to: SellerProfile, kind: has_one, via: seller}
+- {from: Session, to: Valuation, kind: has_one, via: valuation}
+- from: 'Session'
+  to: 'Match'
+  kind: 'has_many'
+  via: 'session_id (GET /api/matches/{session_id})'
+- {from: Session, to: Pairing, kind: has_many, via: session_id (as buyer_id or seller_id)}
+- {from: Session, to: DealFlow, kind: has_one, via: session_id}
+- {from: Session, to: InterestSignals, kind: has_one, via: session_id}
+- {from: Session, to: WatchlistEntry, kind: has_many, via: session_id}
+- {from: Session, to: ActivityEvent, kind: has_many, via: session_id}
+- {from: Session, to: TodoItem, kind: has_many, via: session_id}
+- {from: Session, to: NdaSignature, kind: has_one, via: session_id}
+- {from: Session, to: Mandate, kind: has_one, via: session_id}
+- {from: Session, to: MandateRequest, kind: has_many, via: session_id}
+- {from: Pairing, to: BuyerProfile, kind: belongs_to, via: buyer_id}
+- {from: Pairing, to: SellerProfile, kind: belongs_to, via: seller_id}
+- {from: Pairing, to: PendingPhaseRequest, kind: has_one, via: phase_request}
+- {from: Pairing, to: ProductAnalysis, kind: has_one, via: pairing_id}
+- {from: Pairing, to: InfoMemo, kind: has_one, via: pair_id (light info memo)}
+- {from: Pairing, to: Valuation, kind: has_one, via: valuation / valuation_triangulated}
+- {from: MandateRequest, to: Pairing, kind: has_many, via: pairing_ids}
+- {from: DealFlow, to: DealFlowCounterparty, kind: has_many, via: top / fresh}
+- {from: DealFlow, to: WatchlistEntry, kind: has_many, via: watchlist}
+- {from: WatchlistEntry, to: DealFlowCounterparty, kind: belongs_to, via: entity_id}
+- {from: TodoItem, to: ActivityEvent, kind: belongs_to, via: event / event_ids}
+- {from: DqJob, to: SellerProfile, kind: belongs_to, via: entity_id (entity_type seller)}
+- {from: DqJob, to: BuyerProfile, kind: belongs_to, via: entity_id (entity_type buyer)}
+- {from: A2ATask, to: A2ATaskStatus, kind: has_one, via: status}
+- {from: A2ATask, to: A2AMessage, kind: has_many, via: history}
+- from: 'A2ATask'
+  to: 'A2APart'
+  kind: 'has_many'
+  via: 'artifacts[].parts'
+- {from: A2AMessage, to: A2APart, kind: has_many, via: parts}
+- {from: A2AMessage, to: A2ATask, kind: belongs_to, via: taskId}
+- {from: A2ATask, to: ExchangeManifest, kind: has_one, via: id (= msgid of the publishing message)}
+- {from: ExchangeManifest, to: Workspace, kind: has_one, via: exchange_key on POST /api/workspace/join (tier-2 upgrade after acceptance)}
+phases:
+  note: 'Pairing phases named in the spec summary for POST /api/pairings/update_phase: 0_prospecting, 1_contact, 1_initial_contact, 2_… (the ToS list the pipeline as prospecting, contact, NDA, valuation, LOI, closing; llms-full.txt adds engagement, abandoned, closed). The full enum is not declared as a schema enum, so it is recorded as prose.'
+  phase_request_status: [awaiting_confirmation, no_counterparty]
+  phase_request_decision: [confirm, dismiss, cancel]
+  phase_request_outcome: [confirmed, dismissed, cancelled, expired]
+scoring:
+  fit_score: deterministic(0-100) x semantic(0-1); deterministic = revenue_fit(30) + growth_fit(40) + ebitda_fit(30); threshold 50
+  fit_bands: [strong, moderate, weak, poor]  # pre-NDA on /api/matches
+  exchange_fit_bands: [strong, moderate, weak, thin, unproven]  # mandate disclosure; "a band is evidence, so it is never invented"

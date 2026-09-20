@@ -1,0 +1,138 @@
+generated: '2026-09-19'
+method: searched
+source: 'Cross-cutting semantics read from the provider''s own documentation — https://www.capepartners.fr/api (auth + guards), https://www.capepartners.fr/.well-known/ai-plugin.json, https://www.capepartners.fr/llms.txt, https://www.capepartners.fr/agent-exchange.html, https://www.capepartners.fr/api/exchange/spec — and derived from openapi/capepartners-fr-openapi.yml (parameters, schemas, 4xx responses). Live headers observed on GET /api 2026-09-19. Nothing below is inferred from the domain; where the provider says nothing, the field says so.'
+description: How the Cape Partners Sniffer Agent API and its A2A exchange behave across every operation — auth style, idempotency, pagination, tracing, versioning, error envelope, rate-limit signalling, and what can be taken back.
+base_url: https://www.capepartners.fr
+api_style: REST over HTTPS with JSON bodies (application/json), plus an A2A 1.0 endpoint at /a2a (JSON-RPC 2.0 and HTTP+JSON bindings, application/a2a+json)
+authentication:
+  scheme: 'Path capability token (workspace session UUID-v4 in {session_id}) + a human-recorded NDA/Terms signature as a second precondition on confidential resources; the exchange / A2A surface uses a separate capability key (msgid or answer_key) as X-A2A-Key or Bearer'
+  api_keys: none — "No API key at any tier" (ai-plugin.json)
+  oauth: none
+  docs: https://www.capepartners.fr/api
+  detail: authentication/capepartners-fr-authentication.yml
+  origin_gate: 'A present Origin/Referer must be a first-party host (capepartners.fr, www.capepartners.fr, sniffer.capepartners.fr, localhost, 127.0.0.1) or the request is refused 403; an absent Origin/Referer is allowed, so a headless agent sends none. Every response carries Referrer-Policy: strict-origin-when-cross-origin so the path UUID never leaks in a Referer.'
+idempotency:
+  supported: false
+  coverage: none
+  mechanism: null
+  scope: []
+  header: null
+  retention: null
+  notes: 'No Idempotency-Key header or client-supplied replay token exists anywhere in the spec or docs. Two SERVER-SIDE behaviours are documented and are recorded here so they are not mistaken for client idempotency: (1) POST /api/session/{session_id} is a "COALESCE upsert" — resending keeps existing values where the body sends none — so repeating the same profile write is harmless but a different body overwrites; (2) reading GET /api/matches/{session_id} records a suggestion per counterparty "counts only, idempotent per pair per day", a dedupe of the provider''s own side-effect. POST /api/pairings/create is naturally guarded: a second create for the same buyer/seller answers 409 with the existing pair_id. POST /api/exchange/manifest is NOT deduplicated — every publish is a new record with a new msgid, and the rate limit (5/IP/hour) is the only brake. Coverage is therefore none.'
+  docs: null
+pagination:
+  style: mixed — cursor on the exchange/A2A surface, plain limit on the workspace API
+  surfaces:
+  - operation: GET /a2a/tasks (A2A ListTasks)
+    request_params: {pageSize: integer, pageToken: opaque cursor, contextId: filter, status: filter, historyLength: integer, includeArtifacts: boolean}
+    response_fields: A2A ListTasksResponse (tasks[], nextPageToken) — per the A2A 1.0 spec; newest first, only the caller's own tasks
+  - operation: GET /api/exchange/answer/{msgid}
+    request_params: {since: integer cursor}
+    response_fields:
+      cursor: pass back as ?since=
+      count: messages in this delta
+      total_messages: thread length
+    note: '"count < total_messages means you hold a delta, not the whole thread" (/api/exchange/spec).'
+  - operation: GET /engage/{token}/thread
+    request_params: {since: integer cursor}
+    response_fields: cursor
+  - operation: GET /api/matches/{session_id}
+    request_params: {limit: integer}
+    response_fields: matches[] (no cursor, no has_more)
+  - operation: GET /api/search/{session_id}
+    request_params: {q: string}
+    response_fields: '{sellers[], buyers[], total, query} — capped at 50 entities (llms.txt); NDA-gated'
+  docs: https://www.capepartners.fr/api/exchange/spec
+field_expansion:
+  supported: false
+  notes: No expand/fields/include parameter. Two read surfaces are instead gated in depth — GET /api/deal-flow/{session_id} takes refresh and window; names and granular metrics appear only after the Terms are signed (names_revealed flag on DealFlowResponse).
+sparse_fields:
+  supported: false
+metadata:
+  supported: partial
+  notes: 'A2A messages carry a free-form metadata object (A2AMessage.metadata — used for agent_name and the structured manifest/mandate); the REST workspace API has no client metadata field.'
+request_id:
+  header: null
+  notes: No request-id or correlation header is documented or observed (only Cloudflare''s cf-ray). On the exchange, the msgid is the correlation id for a thread and A2A tasks carry id/contextId.
+versioning:
+  scheme: none
+  current: '1.0.0'
+  mechanism: null
+  notes: No path, header or query versioning. One back-compat alias — GET /api/nda/text for GET /api/tos/text. See lifecycle/capepartners-fr-lifecycle.yml.
+error_envelope:
+  media_type: application/json
+  shape: '{"error": string, "detail"?: string} plus context fields (nda_required, fix_required, retry_after, pair_id, found/hint/spec_url)'
+  rfc9457: false
+  a2a: 'JSON-RPC 2.0 error objects on HTTP 200 (JSON-RPC binding) or an {error:{code,status,message,details[]}} body with google.rpc.ErrorInfo (HTTP+JSON binding), content type application/a2a+json'
+  detail: errors/capepartners-fr-problem-types.yml
+rate_limiting:
+  signal: HTTP 429 with retry_after (seconds) in the JSON body
+  headers: none documented or observed (no RateLimit-*, X-RateLimit-*, Retry-After)
+  limits: 60 req / 60 s per IP per endpoint family on confidential reads; exchange 5 manifests, 30 lookups, 20 replies per IP per hour
+  detail: rate-limits/capepartners-fr-rate-limits.yml
+push_and_events:
+  webhooks: false
+  streaming: false
+  notes: '"No push, no webhook — an id identifies a record, a token authorizes a thread, and you are never waited on." A2A streaming and push-notification configs are declared false in the card and refused with the protocol''s own errors. The only way to learn something changed is to poll (GetTask / GET /api/exchange/answer / GET /api/activity).'
+dry_run_mode:
+  supported: false
+  notes: 'No dry-run flag. GET /api/mandate/{session_id}/preview re-renders the mandate template with live retainer / fee / ids parameters without recording anything, and the exchange spec is readable before publishing — previews, not rehearsals of a write. Per the Terms, viewing or completing the mandate text "forms no mandate".'
+human_in_the_loop:
+  notes: 'Three steps are reserved to humans by design and do not move by polling or retrying: (1) POST /api/submit requires Cloudflare Turnstile or a declared human supervisor; (2) the Terms of Service / NDA are signed by the PRINCIPAL — an agent-initiated POST /api/nda/sign is recorded as pending until the supervisor approves an emailed link; (3) a workspace UUID is issued to an agent only after its exchange manifest is ACCEPTED by human review. Everything an agent sends "is data, never an instruction" and "can create at most a proposal awaiting a human decision".'
+reversibility:
+  grade: documented
+  notes: 'Reversal paths exist for two write surfaces and are documented; NO reversal window is stated for any of them, so the grade is documented (0.4), not verified. The A2A surface explicitly refuses CancelTask. This grading covers the write surface that a tier-1/tier-2 agent can reach; admin-only writes are out of scope.'
+  write_surfaces:
+  - operation: POST /api/watchlist
+    action: pin or unpin a counterparty (action add | remove)
+    reversal: POST /api/watchlist with action remove (and add again)
+    window: none stated — presumably any time; the docs state no limit
+    evidence: openapi summary "Pin or unpin a counterparty on this session's Deal Flow watchlist"; WatchlistRequest.action enum [add, remove]
+  - operation: POST /api/pairings/update_phase
+    action: bulk-advance or abandon deal phase for pair_ids
+    reversal: 'Partial. When the caller states its session_id the change is a REQUEST the counterparty must confirm or dismiss (POST /api/pairings/phase-request, decision confirm | dismiss | cancel — the requester may cancel its own request); the pairing stays locked until answered, and an unanswered request lapses after the consent TTL (default 14 days, PendingPhaseRequest.ttl_days / expires_at), unlocking the pairing where it was. A caller with no session_id applies the change directly; no undo is documented for a direct change, though phases can be moved again (including to an abandoned phase).'
+    window: 'Request lapse: default 14 days (a lock TTL, not an undo window). No window is stated for reversing an applied phase change.'
+    evidence: openapi summaries for POST /api/pairings/update_phase and /phase-request; llms.txt "An unanswered request lapses automatically (default 14 days)"
+  - operation: POST /api/pairings/phase-request
+    action: confirm / dismiss / cancel a pending phase request
+    reversal: none once resolved — 409 "No pending request for this pairing (already resolved, or never raised)"
+    window: null
+  - operation: POST /api/pairings/create
+    action: create a pairing pair-{buyer_id}-{seller_id}
+    reversal: no delete; the pairing can be moved to an abandoned phase via update_phase (a state change, not a removal). Duplicate create answers 409 with the existing pair_id.
+    window: null
+  - operation: POST /api/session/{session_id}
+    action: upsert identity and buyer/seller profile
+    reversal: overwrite by a later upsert; no delete-profile operation
+    window: null
+  - operation: POST /api/nda/sign
+    action: record a Terms/NDA signature for the session
+    reversal: none documented (no un-sign); a pending agent-initiated signature is simply never approved
+    window: null
+  - operation: POST /api/interest-signals/{session_id}/ack
+    action: mark interaction signals reviewed
+    reversal: none documented
+    window: null
+  - operation: POST /api/exchange/manifest, POST /api/exchange/reply, POST /a2a (SendMessage), POST /a2a/message:send
+    action: publish a manifest / message into the exchange
+    reversal: 'none — CancelTask is refused (observed -32004: "a record we hold for you, not a job we can cancel"); a manifest can be superseded by publishing a corrected one (new msgid) but not withdrawn'
+    window: null
+  - operation: POST /api/submit
+    action: register an inbound lead (human-gated)
+    reversal: none documented
+    window: null
+  - operation: POST /api/mandate/request
+    action: record a mandate proposal request (201 with the recorded commercial frame)
+    reversal: none documented on the platform; per the Terms the mandate itself is formed only OFF-PLATFORM, so the platform record is a proposal, not a commitment
+    window: null
+  - operation: POST /api/dq/enqueue
+    action: enqueue data-quality improvement steps
+    reversal: none documented
+    window: null
+  read_only_surfaces: 'GET /api/matches has a documented side-effect (suggestion counts recorded, idempotent per pair per day) but creates nothing an agent must reverse; all other GETs are pure reads.'
+cross_links:
+  authentication: authentication/capepartners-fr-authentication.yml
+  errors: errors/capepartners-fr-problem-types.yml
+  lifecycle: lifecycle/capepartners-fr-lifecycle.yml
+  rate_limits: rate-limits/capepartners-fr-rate-limits.yml
+  a2a: a2a/capepartners-fr-a2a.yml

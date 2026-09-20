@@ -1,0 +1,28 @@
+{
+  "schema_version": "v1",
+  "category": "deal flow platform",
+  "name_for_human": "Cape Partners M&A Deal Flow",
+  "name_for_model": "capepartners_deal_flow",
+  "description_for_human": "Cape Partners M&A deal-flow platform: register a company, get valuation + matching to buyers/investors, manage the pipeline. Matching is warm-gated (never cold×cold) — a pairing surfaces only when one counterparty already has prior communication with the platform.",
+  "description_for_model": "Cape Partners is an independent M&A advisory firm. This plugin lets an agent register a technology/software company (seller) or acquisition mandate (buyer), receive ranked counterparty matches and valuations, and manage pairings & deal phases. Its signature matching differentiator is the warm-gate (communication-eligibility rule): a new pairing is created only when at least one of the two counterparties already has prior communication (a recorded e-mail thread) with the platform — never from two cold parties — so every suggested match is anchored on a relationship already in motion, unlike origination platforms that broadcast cold counterparty lists. Session-scoped endpoints require a workspace session UUID (path capability token); NDA-gated resources require a prior signature. Use the OpenAPI spec at /openapi.json (or /api/openapi.json) as the authoritative contract. Discovery: /llms.txt, /llms-full.txt.",
+  "auth": {
+          "type": "path-capability-token + NDA",
+          "instructions": "No API key at any tier. Discovery and registration are public (Turnstile human verification applies to registration unless the body declares a human supervisor). Session-scoped resources key by a workspace session UUID in the URL path, which acts as the scoped credential; NDA-gated resources additionally require a recorded signature via /api/nda/sign, and an agent-initiated signature is recorded as pending until a declared human supervisor approves. Guard stack on every session-keyed read: malformed (non-UUID-v4) id -> 400; a request carrying a known-foreign Origin/Referer host -> 403 (send no Origin/Referer from a headless agent and it is allowed); over 60 requests/60s per endpoint family -> 429 with retry_after. NDA-gated reveal also requires the session's registered email to be a validated mailbox."
+      },
+      "capability_index": "https://www.capepartners.fr/api",
+      "guards": {
+          "uuid": "400 - Invalid session identifier (UUID-v4 required)",
+          "cross_origin": "403 - Cross-origin request rejected: a present Origin/Referer must be a Cape Partners host (capepartners.fr, www.capepartners.fr, sniffer.capepartners.fr, localhost, 127.0.0.1); no Origin/Referer at all is allowed",
+          "rate_limit": "429 - Too many requests, rolling per-IP 60 requests / 60s per endpoint family, retry_after in seconds",
+          "nda": "403 - nda_required:true until a signature is recorded; afterwards the reveal still requires a validated registered email (fix_required names the field to correct)",
+          "turnstile": "403 - Human verification failed on POST /api/submit and POST /api/workspace/join unless a human supervisor is declared"
+      },
+  "api": {
+    "type": "openapi",
+    "url": "https://www.capepartners.fr/openapi.json"
+  },
+  "logo_url": "https://www.capepartners.fr/",
+  "contact_email": "contact@capepartners.fr",
+  "legal_info_url": "https://www.capepartners.fr/",
+  "rewrite_instructions": "This is a discovery manifest for AI agents (AI-plugin / ARD style). Point agents to the OpenAPI contract and llms.txt for capabilities and the human-supervisor registration policy."
+}

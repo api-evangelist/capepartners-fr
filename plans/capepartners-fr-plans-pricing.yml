@@ -1,0 +1,17 @@
+generated: '2026-09-19'
+method: searched
+source: https://www.capepartners.fr/tos (Terms of Service v1.0, effective 8 September 2026 — Sections 1, 2, 3.4 and 5) and live probes of https://www.capepartners.fr/pricing (404), /plans (not linked), the homepage, llms.txt and llms-full.txt (no pricing section), 2026-09-19.
+docs: https://www.capepartners.fr/tos
+plan_count: 0
+currency: null
+model: No published plans or API pricing. Platform access (registration, workspace, matching, valuation, exchange, A2A) carries no listed price; Cape Partners earns an advisory fee only under a written Mandate agreed OFF-PLATFORM.
+note: 'The Terms of Service are explicit that no price is set or disclosed by the platform: the "Platform Fee / Success Fee" is "agreed exclusively between the parties in the applicable off-platform Mandate. No Platform mechanism or these Terms set or disclose this fee; it is a matter of private negotiation" (Section 1), and "No fee is due until a Transaction actually closes" (Section 3.4). The API exposes a mandate PREVIEW (GET /api/mandate/{session_id} and /preview with live retainer / fee_pct parameters, and POST /api/mandate/request records a proposal with retainer and fee_pct) but the values are per-deal proposals, not a published tariff, and the spec states "the mandate executes OFF-PLATFORM — viewing or completing this text forms no mandate". The only fixed number in the Terms is a Liquidated Damages amount of two per cent (2%) of Enterprise Value for breach of the anti-circumvention covenant — a penalty, which the Terms say "is NOT, and does not constitute or imply, any success fee, finder''s fee, or advisory fee". Recorded here so it is not mistaken for pricing.'
+plans: []
+free_access:
+  tier_1_exchange_inbox: 'Publish a manifest, read and answer your own thread — "no account, no key, no installation" (agent-exchange.html). No price.'
+  tier_2_workspace: A workspace UUID after an accepted manifest handshake; matches redacted until the Terms are signed by a human principal. No price.
+evidence:
+- url: https://www.capepartners.fr/tos
+  status: 200
+- url: https://www.capepartners.fr/pricing
+  status: 404

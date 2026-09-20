@@ -1,0 +1,69 @@
+generated: '2026-09-19'
+method: searched
+source: 'Derived from openapi/capepartners-fr-openapi.yml (securitySchemes, ApiError schema, pagination parameters) and a2a/capepartners-fr-agent-card.json, then checked against the provider''s own claims at https://www.capepartners.fr/api, /llms.txt, /agent-exchange.html, /api/exchange/spec, /robots.txt and the live A2A endpoint. Every `conforms: true` below points at a fetched document or an observed response.'
+standards:
+- id: a2a-1.0
+  conforms: true
+  evidence: Agent Card at https://www.capepartners.fr/.well-known/agent-card.json graded conformant against the A2A 1.0.0 hard checks (a2a/capepartners-fr-a2a.yml); live POST /a2a answers A2A-shaped JSON-RPC errors (-32001 TaskNotFound, -32004 UnsupportedOperation) with google.rpc.ErrorInfo details under domain a2a-protocol.org, content type application/a2a+json. Streaming, push notifications, cancellation and the extended card are declared false and refused with the protocol's own errors.
+- id: json-rpc-2.0
+  conforms: true
+  evidence: POST /a2a accepts {"jsonrpc":"2.0","id","method","params"} (schema A2AJsonRpcRequest) and returns JSON-RPC 2.0 error objects on HTTP 200 (observed 2026-09-19).
+- id: rfc8615-well-known
+  conforms: true
+  evidence: /.well-known/agent-card.json and /.well-known/ai-plugin.json served on www and sniffer (well-known/capepartners-fr-well-known.yml). No security.txt, no OAuth/OIDC discovery.
+- id: openapi-3.1
+  conforms: true
+  evidence: https://www.capepartners.fr/openapi.json declares openapi 3.1.0, 47 paths / 48 operations, 49 component schemas; parses and round-trips. No operationIds are declared (overlays/ assigns them).
+- id: llms-txt
+  conforms: true
+  evidence: https://www.capepartners.fr/llms.txt (H1, blockquote summary, sectioned link lists) — saved to llms/capepartners-fr-llms.txt; also served at /.well-known/llms.txt and /llms-full.txt.
+- id: ai-plugin-manifest
+  conforms: true
+  evidence: /.well-known/ai-plugin.json schema_version v1 with api.type openapi pointing at the contract (well-known/capepartners-fr-ai-plugin.json).
+- id: robots-content-signals
+  conforms: true
+  evidence: 'robots.txt carries Content-Signal: search=yes,ai-input=yes,ai-train=yes,use=reference plus explicit Allow rules for 22 named AI crawlers and Crawl-delay 10 for four of them.'
+- id: pagination
+  conforms: true
+  evidence: 'Cursor pagination on two surfaces: A2A ListTasks (pageSize / pageToken query params on GET /a2a/tasks, per the A2A spec) and the exchange thread read (GET /api/exchange/answer/{msgid}?since=<cursor>, response returns cursor + count; GET /engage/{token}/thread?since=N). The workspace API itself uses a plain limit on GET /api/matches/{session_id} and no pagination elsewhere.'
+- id: oauth2
+  conforms: false
+  evidence: No oauth2 securityScheme; /.well-known/oauth-authorization-server and /.well-known/oauth-protected-resource 404 on www and sniffer. The provider states "No API key at any tier" — auth is a path capability token plus an exchange key.
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration 404 on every host.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: 'Errors are application/json {"error": string, "detail"?: string} (schema ApiError); some carry extra fields (nda_required, fix_required, retry_after, pair_id). A2A errors use the google.rpc.ErrorInfo shape. No application/problem+json anywhere in the spec.'
+- id: idempotency
+  conforms: false
+  evidence: No Idempotency-Key header or equivalent client replay mechanism in the spec or docs. (POST /api/session/{session_id} is described as a COALESCE upsert and match-list suggestion recording is "idempotent per pair per day" — server-side semantics, not a client-controllable replay guarantee; see conventions/.)
+- id: rfc8594-deprecation-sunset
+  conforms: false
+  evidence: No Deprecation or Sunset headers documented; no deprecated:true operations; no versioning or deprecation policy page (lifecycle/).
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt 404 on www and sniffer; apex redirects to the homepage.
+- id: rfc9727-api-catalog
+  conforms: false
+  evidence: /.well-known/api-catalog 404 on every host.
+- id: scim
+  conforms: false
+- id: odata
+  conforms: false
+- id: json-api
+  conforms: false
+- id: fhir-r4
+  conforms: false
+- id: fapi
+  conforms: false
+- id: psd2
+  conforms: false
+  evidence: Not a payment or account-information service; the ToS states the platform is a pure venue and not a broker-dealer, M&A broker or investment adviser.
+domain_standard:
+  market: Technology M&A advisory / deal-flow platform
+  declared: none
+  note: 'Reward-only check. No domain standard is declared in the contract and none is established for M&A deal-flow platforms (the spec uses the provider''s own fit-score, pair-{buyer_id}-{seller_id} and phase vocabulary). The company identifiers the platform enriches from are French registry identifiers (SIREN via INSEE/SIRENE and Pappers, named in llms.txt) but the API does not expose a SIREN-shaped endpoint or schema field, so no conformance is claimed. Not penalised.'
+compliance_program:
+  published: false
+  note: No trust center, certification list (SOC 2 / ISO 27001 / etc.) or compliance page was found — /security, /trust, /compliance 404; probe-security-programs.py recorded vdp=none trust=none. The Terms of Service (https://www.capepartners.fr/tos, v1.0, effective 8 September 2026, French governing law) cover confidentiality, anti-circumvention and liquidated damages but are a contract, not a compliance program. No Compliance pointer is emitted.

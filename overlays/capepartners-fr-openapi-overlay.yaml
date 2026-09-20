@@ -1,0 +1,208 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Cape Partners Sniffer Agent API
+  version: 1.0.0
+  description: OpenAPI Overlay 1.0.0 capturing API Evangelist enhancements to the harvested Cape Partners contract without mutating it. The provider spec declares no operationId on any of its 48 operations;
+    this overlay assigns a deterministic operationId (method + path segments, camelCase, path parameters as By<Name>) to each so skills, crosswalks and clients can address operations by name. Generated
+    2026-09-19 from openapi/_original/capepartners-fr-openapi.json.
+extends: openapi/capepartners-fr-openapi.yml
+actions:
+- target: $.info
+  update:
+    x-apievangelist:
+      profile: https://apis.io/providers/capepartners-fr/
+      harvested: '2026-09-19'
+      source: https://www.capepartners.fr/openapi.json
+      note: operationIds below are assigned by API Evangelist; the provider spec declares none.
+- target: $.paths['/api/submit'].post
+  update:
+    operationId: postApiSubmit
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api'].get
+  update:
+    operationId: getApi
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/.well-known/llms.txt'].get
+  update:
+    operationId: getWellKnownLlmsTxt
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/.well-known/ai-plugin.json'].get
+  update:
+    operationId: getWellKnownAiPluginJson
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/workspace/{session_id}'].get
+  update:
+    operationId: getApiWorkspaceBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/workspace/join'].post
+  update:
+    operationId: postApiWorkspaceJoin
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/session/{session_id}'].get
+  update:
+    operationId: getApiSessionBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/session/{session_id}'].post
+  update:
+    operationId: postApiSessionBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/matches/{session_id}'].get
+  update:
+    operationId: getApiMatchesBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/matched-names/{session_id}'].get
+  update:
+    operationId: getApiMatchedNamesBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/seller-name/{session_id}'].get
+  update:
+    operationId: getApiSellerNameBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/valuation/{session_id}'].get
+  update:
+    operationId: getApiValuationBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/pairings/{session_id}'].get
+  update:
+    operationId: getApiPairingsBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/pairings/create'].post
+  update:
+    operationId: postApiPairingsCreate
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/pairings/update_phase'].post
+  update:
+    operationId: postApiPairingsUpdatePhase
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/pairings/phase-request'].post
+  update:
+    operationId: postApiPairingsPhaseRequest
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/search/{session_id}'].get
+  update:
+    operationId: getApiSearchBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/activity/{session_id}'].get
+  update:
+    operationId: getApiActivityBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/interest-signals/{session_id}'].get
+  update:
+    operationId: getApiInterestSignalsBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/interest-signals/{session_id}/ack'].post
+  update:
+    operationId: postApiInterestSignalsBySessionIdAck
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/deal-flow/{session_id}'].get
+  update:
+    operationId: getApiDealFlowBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/watchlist'].post
+  update:
+    operationId: postApiWatchlist
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/infomemo/{session_id}'].get
+  update:
+    operationId: getApiInfomemoBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/infomemo/{session_id}/download'].get
+  update:
+    operationId: getApiInfomemoBySessionIdDownload
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/light-infomemo/{session_id}/{pair_id}'].get
+  update:
+    operationId: getApiLightInfomemoBySessionIdByPairId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/product-analysis/{session_id}/{pairing_id}'].get
+  update:
+    operationId: getApiProductAnalysisBySessionIdByPairingId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/nda/sign'].post
+  update:
+    operationId: postApiNdaSign
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/nda/text'].get
+  update:
+    operationId: getApiNdaText
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/tos/text'].get
+  update:
+    operationId: getApiTosText
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/dq/enqueue'].post
+  update:
+    operationId: postApiDqEnqueue
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/mandate/{session_id}'].get
+  update:
+    operationId: getApiMandateBySessionId
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/mandate/{session_id}/preview'].get
+  update:
+    operationId: getApiMandateBySessionIdPreview
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/mandate/request'].post
+  update:
+    operationId: postApiMandateRequest
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/.well-known/agent-card.json'].get
+  update:
+    operationId: getWellKnownAgentCardJson
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/a2a'].post
+  update:
+    operationId: postA2a
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/a2a/message:send'].post
+  update:
+    operationId: postA2aMessageSend
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/a2a/tasks'].get
+  update:
+    operationId: getA2aTasks
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/a2a/tasks/{id}'].get
+  update:
+    operationId: getA2aTasksById
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/exchange/spec'].get
+  update:
+    operationId: getApiExchangeSpec
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/exchange/manifest'].post
+  update:
+    operationId: postApiExchangeManifest
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/exchange/answer/{msgid}'].get
+  update:
+    operationId: getApiExchangeAnswerByMsgid
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/api/exchange/reply'].post
+  update:
+    operationId: postApiExchangeReply
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/engage/{token}/thread'].get
+  update:
+    operationId: getEngageByTokenThread
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/engage/{token}/reply'].post
+  update:
+    operationId: postEngageByTokenReply
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/llms.txt'].get
+  update:
+    operationId: getLlmsTxt
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/llms-full.txt'].get
+  update:
+    operationId: getLlmsFullTxt
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/robots.txt'].get
+  update:
+    operationId: getRobotsTxt
+    x-apievangelist-operation-id: assigned
+- target: $.paths['/sitemap.xml'].get
+  update:
+    operationId: getSitemapXml
+    x-apievangelist-operation-id: assigned

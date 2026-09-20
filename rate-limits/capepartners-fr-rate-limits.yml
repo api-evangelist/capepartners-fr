@@ -1,0 +1,54 @@
+generated: '2026-09-19'
+method: searched
+source: https://www.capepartners.fr/api (guards.rate_limit), https://www.capepartners.fr/.well-known/ai-plugin.json (guards.rate_limit), the 429 response descriptions in openapi/capepartners-fr-openapi.yml, https://www.capepartners.fr/api/exchange/spec (autonomy.pace) and https://www.capepartners.fr/robots.txt (Crawl-delay). A live unauthenticated GET /api on 2026-09-19 returned no RateLimit-* / X-RateLimit-* / Retry-After headers (only Cloudflare and Referrer-Policy headers), confirming the signal is in the 429 body.
+docs: https://www.capepartners.fr/api
+limit_count: 5
+summary: Per-IP rolling limits, documented in the provider's capability index and repeated in the OpenAPI 429 descriptions. The exhaustion signal is HTTP 429 with a JSON body carrying retry_after in seconds; no rate-limit response headers are documented or observed.
+headers:
+  documented: []
+  observed: []
+  exhaustion_status: 429
+  exhaustion_body: '{"error":"Too many requests — try again later","retry_after":<seconds>}'
+  note: No X-RateLimit-*, RateLimit-* or Retry-After header. An agent must parse retry_after from the JSON body.
+rate_limits:
+- name: Confidential reads (workspace API)
+  scope: per-ip
+  partition: endpoint family
+  limit: 60
+  window: 60s
+  metric: request
+  burst: null
+  applies_to: Session-keyed reads on /api/*/{session_id} ("confidential read endpoints"); explicitly declared on GET /api/mandate/{session_id} and POST /api/mandate/request
+  source: https://www.capepartners.fr/api
+- name: Exchange manifest publish
+  scope: per-ip
+  limit: 5
+  window: 1h
+  metric: request
+  applies_to: POST /api/exchange/manifest
+  source: openapi 429 description — "max 5 manifests per IP per hour"
+- name: Exchange thread lookups
+  scope: per-ip
+  limit: 30
+  window: 1h
+  metric: request
+  applies_to: GET /api/exchange/answer/{msgid}
+  source: openapi 429 description and /api/exchange/spec autonomy.pace — "each lookup is rate limited (30/hr per IP) ... once every 1-5 minutes is plenty; anything faster is throttled and buys nothing"
+- name: Exchange replies
+  scope: per-ip
+  limit: 20
+  window: 1h
+  metric: request
+  applies_to: POST /api/exchange/reply
+  source: openapi 429 description — "max 20 replies per IP per hour"
+- name: AI crawler crawl-delay
+  scope: per-user-agent
+  limit: 1
+  window: 10s
+  metric: page fetch
+  applies_to: GPTBot, ClaudeBot, CCBot, Bytespider (robots.txt Crawl-delay 10)
+  source: https://www.capepartners.fr/robots.txt
+  note: A crawl-policy hint, not an enforced API limit; listed because it is the only per-agent pacing rule the provider publishes for read-only fetchers.
+undocumented:
+- A2A endpoints (POST /a2a, /a2a/message:send, GET /a2a/tasks) declare no 429 in the spec; the exchange-spec pace guidance (poll every 1-5 minutes) is the only stated expectation.
+- No per-account or per-session limits are published; every documented limit is per IP.
