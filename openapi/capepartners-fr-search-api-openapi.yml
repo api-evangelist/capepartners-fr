@@ -1,0 +1,125 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Search API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Search across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Search
+paths:
+  /api/search/{session_id}:
+    get:
+      summary: Manual search of sellers and buyers by name/sector/product.
+      tags:
+      - Search
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Search term
+      operationId: getApiSearchBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    SearchSeller:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        sector:
+          type: string
+        revenue:
+          type: number
+        ebitda:
+          type: number
+        product:
+          type: string
+        contact_name:
+          type: string
+        contact_email:
+          type: string
+        paired:
+          type: boolean
+          description: Pairing already exists relative to this requesting session
+    SearchBuyer:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        sector:
+          type: string
+        ticket_min:
+          type: number
+        ticket_max:
+          type: number
+        contact:
+          type: string
+        contact_email:
+          type: string
+        paired:
+          type: boolean
+    SearchResponse:
+      type: object
+      properties:
+        sellers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchSeller'
+        buyers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchBuyer'
+        total:
+          type: integer
+        query:
+          type: string
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

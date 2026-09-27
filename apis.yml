@@ -14,7 +14,7 @@ tags:
 - Deal Flow
 - Valuation
 - Investment
-- Financial-Services
+- Financial Services
 - Agents
 - A2A
 - France
@@ -31,35 +31,18 @@ tags_raw:
 - France
 - Technology
 - SaaS
+- Financial-Services
 apis:
-- name: Cape Partners Sniffer Agent API
-  description: 'Machine-readable API backing the Cape Partners M&A deal-flow workspace — inbound submission, workspace session and profile management, ranked matching, valuation, pairings and mutual-consent phase changes, deal flow and interest signals, info memos, NDA/Terms signature, data-quality enqueue, and mandate proposals — as an OpenAPI 3.1 contract (47 paths, 48 operations) for autonomous agents. Session-scoped endpoints are keyed by a workspace UUID carried in the URL path; NDA-gated resources additionally require a recorded human signature.'
-  humanURL: https://www.capepartners.fr/
-  baseURL: https://www.capepartners.fr
-  tags:
-  - Mergers and Acquisitions
-  - Deal Flow
-  - Valuation
-  - Matching
-  - Workspace
-  properties:
-  - type: OpenAPI
-    url: openapi/capepartners-fr-openapi.yml
-  - type: OpenAPI
-    name: OpenAPI (provider-hosted)
-    url: https://www.capepartners.fr/openapi.json
-  - type: APIReference
-    url: https://www.capepartners.fr/api
-  - type: Documentation
-    url: https://www.capepartners.fr/llms.txt
-  - type: Overlay
-    url: overlays/capepartners-fr-openapi-overlay.yaml
-  - type: ErrorCatalog
-    url: errors/capepartners-fr-problem-types.yml
-  - type: DataModel
-    url: data-model/capepartners-fr-data-model.yml
 - name: Cape Partners Agent Exchange (A2A)
-  description: 'The A2A 1.0 surface of the Cape Partners agent exchange: SendMessage, GetTask and ListTasks on both the JSON-RPC binding (POST /a2a) and the HTTP+JSON binding (POST /a2a/message:send, GET /a2a/tasks, GET /a2a/tasks/{id}). An agent publishes a six-field manifest (identity, wants, offers, interface, delivery_contract, boundary) or any message and receives a Task whose artifact is the receipt or a grounded reply; the msgid issued with the first message is the capability key (X-A2A-Key or Bearer) for reading tasks back. Streaming, push notifications, cancellation and the extended card are declared unsupported. REST twins exist at POST /api/exchange/manifest, GET /api/exchange/answer/{msgid} and POST /api/exchange/reply.'
+  description: >-
+    The A2A 1.0 surface of the Cape Partners agent exchange: SendMessage, GetTask and ListTasks on both
+    the JSON-RPC binding (POST /a2a) and the HTTP+JSON binding (POST /a2a/message:send, GET /a2a/tasks,
+    GET /a2a/tasks/{id}). An agent publishes a six-field manifest (identity, wants, offers, interface,
+    delivery_contract, boundary) or any message and receives a Task whose artifact is the receipt or a
+    grounded reply; the msgid issued with the first message is the capability key (X-A2A-Key or Bearer)
+    for reading tasks back. Streaming, push notifications, cancellation and the extended card are declared
+    unsupported. REST twins exist at POST /api/exchange/manifest, GET /api/exchange/answer/{msgid} and
+    POST /api/exchange/reply.
   humanURL: https://www.capepartners.fr/agent-exchange.html
   baseURL: https://www.capepartners.fr/a2a
   tags:
@@ -74,12 +57,284 @@ apis:
     url: https://www.capepartners.fr/agent-exchange.html
   - type: APIReference
     url: https://www.capepartners.fr/api/exchange/spec
+- aid: capepartners-fr:capepartners-fr-activity-api
+  name: Cape Partners Activity API
+  description: The Activity API from Cape Partners — 1 operation(s) for activity.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Activity
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-activity-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-confidentiality-api
+  name: Cape Partners Confidentiality API
+  description: The Confidentiality API from Cape Partners — 3 operation(s) for confidentiality.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Confidentiality
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-confidentiality-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-dataquality-api
+  name: Cape Partners Data Quality API
+  description: The DataQuality API from Cape Partners — 1 operation(s) for dataquality.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - DataQuality
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-dataquality-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-dealflow-api
+  name: Cape Partners Deal Flow API
+  description: The DealFlow API from Cape Partners — 2 operation(s) for dealflow.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - DealFlow
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-dealflow-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-discovery-api
+  name: Cape Partners Discovery API
+  description: The Discovery API from Cape Partners — 7 operation(s) for discovery.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Discovery
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-discovery-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-exchange-api
+  name: Cape Partners Exchange API
+  description: The Exchange API from Cape Partners — 11 operation(s) for exchange.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Exchange
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-exchange-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-identity-api
+  name: Cape Partners Identity API
+  description: The Identity API from Cape Partners — 3 operation(s) for identity.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Identity
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-identity-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-infomemos-api
+  name: Cape Partners Info Memos API
+  description: The InfoMemos API from Cape Partners — 4 operation(s) for infomemos.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - InfoMemos
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-infomemos-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-interest-api
+  name: Cape Partners Interest API
+  description: The Interest API from Cape Partners — 2 operation(s) for interest.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Interest
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-interest-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-mandate-api
+  name: Cape Partners Mandate API
+  description: The Mandate API from Cape Partners — 3 operation(s) for mandate.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Mandate
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-mandate-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-matching-api
+  name: Cape Partners Matching API
+  description: The Matching API from Cape Partners — 3 operation(s) for matching.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Matching
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-matching-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-pairings-api
+  name: Cape Partners Pairings API
+  description: The Pairings API from Cape Partners — 4 operation(s) for pairings.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Pairings
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-pairings-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-registration-api
+  name: Cape Partners Registration API
+  description: The Registration API from Cape Partners — 1 operation(s) for registration.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Registration
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-registration-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-search-api
+  name: Cape Partners Search API
+  description: The Search API from Cape Partners — 1 operation(s) for search.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Search
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-search-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
+- aid: capepartners-fr:capepartners-fr-valuation-api
+  name: Cape Partners Valuation API
+  description: The Valuation API from Cape Partners — 1 operation(s) for valuation.
+  humanURL: https://www.capepartners.fr/
+  baseURL: https://sniffer.capepartners.fr
+  tags:
+  - Valuation
+  properties:
+  - type: OpenAPI
+    url: openapi/capepartners-fr-valuation-api-openapi.yml
+  - type: APIReference
+    url: https://www.capepartners.fr/api
+  - type: Documentation
+    url: https://www.capepartners.fr/llms.txt
+  - type: ErrorCatalog
+    url: errors/capepartners-fr-problem-types.yml
+  - type: DataModel
+    url: data-model/capepartners-fr-data-model.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/capepartners-fr-openapi-overlay.yaml
 - type: Website
   url: https://www.capepartners.fr/
 - type: Documentation
@@ -119,3 +374,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 23
   pass: local-v3
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://www.capepartners.fr/.well-known/agent-card.json"
+  grade: "flavored"
+  protocol_version: "1.0"
+  control: 404

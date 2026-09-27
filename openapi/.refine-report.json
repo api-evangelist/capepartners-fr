@@ -1,0 +1,51 @@
+{
+  "provider": "capepartners-fr",
+  "sources": [
+    "_original/capepartners-fr-openapi.json",
+    "capepartners-fr-openapi.yml"
+  ],
+  "outputs": [
+    "capepartners-fr-activity-api-openapi.yml",
+    "capepartners-fr-confidentiality-api-openapi.yml",
+    "capepartners-fr-dataquality-api-openapi.yml",
+    "capepartners-fr-dealflow-api-openapi.yml",
+    "capepartners-fr-discovery-api-openapi.yml",
+    "capepartners-fr-exchange-api-openapi.yml",
+    "capepartners-fr-identity-api-openapi.yml",
+    "capepartners-fr-infomemos-api-openapi.yml",
+    "capepartners-fr-interest-api-openapi.yml",
+    "capepartners-fr-mandate-api-openapi.yml",
+    "capepartners-fr-matching-api-openapi.yml",
+    "capepartners-fr-pairings-api-openapi.yml",
+    "capepartners-fr-registration-api-openapi.yml",
+    "capepartners-fr-search-api-openapi.yml",
+    "capepartners-fr-valuation-api-openapi.yml"
+  ],
+  "archived": [
+    "archived openapi/capepartners-fr-openapi.yml"
+  ],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "capepartners-fr-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "capepartners-fr-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "tag 'Activity' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Confidentiality' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'DataQuality' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'DealFlow' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Discovery' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Exchange' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Identity' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'InfoMemos' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Interest' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Mandate' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Matching' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Pairings' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Registration' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Search' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "tag 'Valuation' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
+    "apis.yml register: written (+15 apis, 16 total)"
+  ],
+  "skipped": []
+}

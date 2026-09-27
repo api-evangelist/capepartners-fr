@@ -1,0 +1,112 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Activity API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Activity across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Activity
+paths:
+  /api/activity/{session_id}:
+    get:
+      summary: The session activity feed and its To Do block.
+      tags:
+      - Activity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      operationId: getApiActivityBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    ActivityEvent:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        time:
+          type: string
+    TodoItem:
+      type: object
+      properties:
+        type:
+          type: string
+          description: 'One of: nda, profile, matches, interest'
+        action:
+          type: string
+          description: 'Surface/behaviour: nda (sign modal), settings, pipeline, ack (mark this signal reviewed), ack_all (mark every pending signal reviewed)'
+        label:
+          type: string
+        detail:
+          type: string
+        priority:
+          type: integer
+        event:
+          type: string
+          description: 'For type=interest: the interaction event behind the item (pairing_created, phase_advanced, pairing_abandoned, pairing_closed, or rollup).'
+        event_ids:
+          type: array
+          items:
+            type: integer
+          description: 'For type=interest: the interaction-ledger event ids to send to POST /api/interest-signals/{session_id}/ack. Empty for the ack_all rollup.'
+    ActivityResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityEvent'
+        todo:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoItem'
+          description: 'Pending required actions for this session: agreement review if unsigned, profile completion, parked suggestions awaiting action, and unreviewed counterparty interaction signals (a pairing created on this profile, or a phase change on it). Each item carries {type, action, label, detail, priority}. Items of type=''interest'' are cleared by POST /api/interest-signals/{session_id}/ack; the others clear when the underlying condition is resolved. Array empty when nothing is pending.'
+        nda_signed:
+          type: boolean
+          description: True when a server-side NDA signature exist for this session.
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

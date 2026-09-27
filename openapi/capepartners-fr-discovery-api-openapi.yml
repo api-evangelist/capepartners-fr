@@ -1,0 +1,196 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Discovery API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Discovery across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Discovery
+paths:
+  /api:
+    get:
+      summary: 'Agent capability index: service/version/base_url, auth model, discovery links…'
+      tags:
+      - Discovery
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    type: string
+                  version:
+                    type: string
+                  base_url:
+                    type: string
+                  auth:
+                    type: object
+                  discovery:
+                    type: object
+                  capabilities:
+                    type: array
+                    items:
+                      type: object
+                  example:
+                    type: object
+      security: []
+      operationId: getApi
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /.well-known/llms.txt:
+    get:
+      summary: Serve the LLM discovery index (same content as /llms.txt) at the conventional…
+      tags:
+      - Discovery
+      responses:
+        '200':
+          description: llms.txt content
+      security: []
+      operationId: getWellKnownLlmsTxt
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /.well-known/ai-plugin.json:
+    get:
+      summary: AI-plugin / ARD discovery manifest (points agents to the OpenAPI contract +…
+      tags:
+      - Discovery
+      responses:
+        '200':
+          description: ai-plugin.json manifest
+      security: []
+      operationId: getWellKnownAiPluginJson
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /llms.txt:
+    get:
+      summary: Agent-facing capability summary (llms.txt).
+      tags:
+      - Discovery
+      responses:
+        '200':
+          description: Plain text
+          content:
+            text/plain:
+              schema:
+                type: string
+      security: []
+      operationId: getLlmsTxt
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /llms-full.txt:
+    get:
+      summary: Extended agent-facing capability summary (llms-full.txt).
+      tags:
+      - Discovery
+      responses:
+        '200':
+          description: Plain text
+          content:
+            text/plain:
+              schema:
+                type: string
+      security: []
+      operationId: getLlmsFullTxt
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /robots.txt:
+    get:
+      summary: Crawl policy + content signals (search / ai-input / ai-train).
+      tags:
+      - Discovery
+      responses:
+        '200':
+          description: Plain text
+          content:
+            text/plain:
+              schema:
+                type: string
+      security: []
+      operationId: getRobotsTxt
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /sitemap.xml:
+    get:
+      summary: Sitemap of public pages
+      tags:
+      - Discovery
+      responses:
+        '200':
+          description: XML sitemap
+          content:
+            application/xml:
+              schema:
+                type: string
+      security: []
+      operationId: getSitemapXml
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

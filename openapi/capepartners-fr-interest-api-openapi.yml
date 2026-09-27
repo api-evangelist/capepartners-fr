@@ -1,0 +1,287 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Interest API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Interest across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Interest
+paths:
+  /api/interest-signals/{session_id}:
+    get:
+      summary: Inbound interest signals from counterparties about the entity this session…
+      tags:
+      - Interest
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterestSignalsResponse'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      - name: refresh
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Force a deal-universe recompute
+      operationId: getApiInterestSignalsBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/interest-signals/{session_id}/ack:
+    security:
+    - SessionToken: []
+    post:
+      summary: Mark interaction signals as reviewed.
+      tags:
+      - Interest
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InterestAckResponse'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestAckRequest'
+      operationId: postApiInterestSignalsBySessionIdAck
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    InterestAckResponse:
+      type: object
+      properties:
+        marked:
+          type: integer
+          description: Signals that moved to reviewed.
+        pending:
+          type: integer
+          description: Signals still pending review for this entity after the call.
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
+    InterestSignalsResponse:
+      type: object
+      description: Inbound interest signals from counterparties about the session's own entity. Counts only; no counterparty identities.
+      properties:
+        context:
+          type: string
+          enum:
+          - seller
+          - buyer
+        entity_id:
+          type: integer
+        entity_name:
+          type: string
+        searches:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Counterparty searches whose results surfaced this entity (self-searches excluded).
+            counterparties:
+              type: integer
+              description: Distinct counterparty sessions behind those searches.
+            recent:
+              type: array
+              items:
+                type: object
+                properties:
+                  query:
+                    type: string
+                  at:
+                    type: string
+        suggestions:
+          type: object
+          properties:
+            total:
+              type: integer
+              description: Suggestion (matched) events referencing this entity.
+            counterparties:
+              type: integer
+            parked:
+              type: integer
+              description: Pairings holding this entity at phase 0_prospecting, i.e. suggestions nobody has actioned.
+            parked_counterparties:
+              type: integer
+            reach:
+              type: integer
+              description: Distinct counterparties that received this entity as a suggested match.
+        pairings:
+          type: object
+          description: 'Interaction history: what counterparties have DONE with this profile — pairings created, every phase transition, drops and closes. Positive and negative alike. The live suggestion counts cannot carry this (a pairing leaves phase 0_prospecting as soon as it is actioned or dropped). `unnotified` is the hook a notifier consumes before marking events delivered.'
+          properties:
+            total:
+              type: integer
+              description: Ledger events recorded for this entity.
+            counterparties:
+              type: integer
+              description: Distinct counterparties that ever paired this entity.
+            created:
+              type: integer
+              description: Pairings created on this entity.
+            advanced:
+              type: integer
+              description: Phase transitions that are progress.
+            abandoned:
+              type: integer
+              description: Pairings a counterparty dropped.
+            dropped:
+              type: integer
+              description: Alias of abandoned.
+            closed:
+              type: integer
+              description: Pairings that reached a close.
+            last_at:
+              type:
+              - string
+              - 'null'
+              description: Timestamp of the most recent interaction event.
+            unnotified:
+              type: integer
+              description: Events not yet delivered to the workspace user.
+            pending_review:
+              type: integer
+              description: Notifiable events (new pairing / phase change / drop / close) not yet reviewed. This is exactly what the Activity To Do block reports, so the card and the To Do list always agree.
+            timeline:
+              type: array
+              description: The 10 most recent interaction events, oldest first.
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  event:
+                    type: string
+                  label:
+                    type: string
+                  cp_type:
+                    type:
+                    - string
+                    - 'null'
+                  cp_id:
+                    type:
+                    - integer
+                    - 'null'
+                  phase_from:
+                    type:
+                    - string
+                    - 'null'
+                  phase_to:
+                    type:
+                    - string
+                    - 'null'
+                  at:
+                    type:
+                    - string
+                    - 'null'
+                  source:
+                    type:
+                    - string
+                    - 'null'
+                  notified:
+                    type: boolean
+        universe:
+          type: object
+          properties:
+            appearances:
+              type:
+              - integer
+              - 'null'
+              description: Counterparties whose scored universe contains this entity.
+            universe_size:
+              type:
+              - integer
+              - 'null'
+              description: Counterparties swept (the denominator).
+            best_score:
+              type:
+              - number
+              - 'null'
+            threshold:
+              type: number
+              description: Universe floor (50), the same cut the suggested-match reveal uses.
+            scored:
+              type: integer
+              description: Counterparties that returned a usable score.
+            unscored:
+              type: integer
+              description: Counterparties that returned no score (semantic step unavailable).
+            no_embedding:
+              type: integer
+              description: Counterparties missing the embedding the semantic step needs. Reported, never auto-generated.
+            entity_embedded:
+              type: boolean
+              description: Whether this entity itself carries the embedding the semantic step needs.
+            cached:
+              type: boolean
+            computed_at:
+              type: number
+    InterestAckRequest:
+      type: object
+      description: Acknowledge interaction signals. Send either event_ids (from the To Do item) or all=true. Events are scoped to the entity that session owns; only its own signals can be acknowledged.
+      properties:
+        event_ids:
+          type: array
+          items:
+            type: integer
+        all:
+          type: boolean
+          default: false
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

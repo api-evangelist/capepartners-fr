@@ -1,0 +1,405 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Deal Flow API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged DealFlow across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: DealFlow
+paths:
+  /api/deal-flow/{session_id}:
+    get:
+      summary: 'The supply-side counterpart of the Interest Signals card: the counterparty…'
+      tags:
+      - DealFlow
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealFlowResponse'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      - name: refresh
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Force a universe recompute instead of using the 24h cache
+      - name: window
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 90
+        description: Freshness window in days for the "new & recently enriched" list
+      security:
+      - SessionToken: []
+      operationId: getApiDealFlowBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/watchlist:
+    post:
+      summary: Pin or unpin a counterparty on this session's Deal Flow watchlist.
+      tags:
+      - DealFlow
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchlistResponse'
+        '400':
+          description: entity_type/entity_id missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                description: entity_type/entity_id missing or invalid
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '404':
+          description: Counterparty not found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Counterparty not found
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: Cross-origin request rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Cross-origin request rejected
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchlistRequest'
+      security:
+      - SessionToken: []
+      operationId: postApiWatchlist
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    WatchlistResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        action:
+          type: string
+        entity_type:
+          type: string
+        watched:
+          type: array
+          items:
+            type: integer
+          description: The session's remaining watched ids of that entity_type.
+    DealFlowCounterparty:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+          - seller
+          - buyer
+        name:
+          type: string
+          description: Real name when names_revealed, else "Company <letter>".
+        revealed:
+          type: boolean
+        score:
+          type: number
+          description: Canonical fit score (deterministic x semantic).
+        sector:
+          type: string
+        data_quality:
+          type: number
+        created_at:
+          type:
+          - string
+          - 'null'
+        last_touch:
+          type:
+          - string
+          - 'null'
+          description: Null when the counterparty has neither a record timestamp nor any logged event — reported as unknown, never invented.
+        touch_kind:
+          type: string
+          enum:
+          - sourced
+          - enriched
+        paired_phase:
+          type:
+          - string
+          - 'null'
+          description: Phase of this pairing for the session, when one exists.
+        watched:
+          type: boolean
+        has_session:
+          type: boolean
+        revenue:
+          type:
+          - number
+          - 'null'
+          description: Seller counterparties only.
+        growth:
+          type:
+          - number
+          - 'null'
+          description: Seller counterparties only (fraction).
+        ebitda_margin:
+          type:
+          - number
+          - 'null'
+        valuation:
+          type:
+          - number
+          - 'null'
+        geography:
+          type: string
+        ticket_min:
+          type:
+          - number
+          - 'null'
+          description: Buyer counterparties only.
+        ticket_max:
+          type:
+          - number
+          - 'null'
+        growth_target:
+          type:
+          - number
+          - 'null'
+        ebitda_target:
+          type:
+          - number
+          - 'null'
+    DealFlowResponse:
+      type: object
+      description: 'The supply-side counterpart of the Interest Signals card: the counterparty universe that matches the session''s OWN mandate, ranked, with what is new and the session''s watchlist. Names are masked ("Company A") until the session''s agreement is confirmed — the same reveal rule as /api/matches — so the payload is safe to render pre-reveal. Shares ONE memoised universe sweep with GET /api/interest-signals (24h TTL per entity).'
+      properties:
+        context:
+          type: string
+          enum:
+          - seller
+          - buyer
+          description: Which side this session owns.
+        counterparty_type:
+          type: string
+          enum:
+          - seller
+          - buyer
+          description: The side being described (the opposite of context).
+        entity_id:
+          type: integer
+        entity_name:
+          type: string
+        names_revealed:
+          type: boolean
+          description: True only when the session's ToS/NDA signature is confirmed. When false every name is "Company <letter>".
+        mandate:
+          type: object
+          description: 'The session''s own criteria, echoed back (buyers: ticket range, geography, growth/EBITDA targets, sector; sellers: revenue, growth, valuation, sector).'
+        universe:
+          type: object
+          properties:
+            matched:
+              type: integer
+              description: Counterparties at or above the fit threshold (50).
+            size:
+              type:
+              - integer
+              - 'null'
+              description: Counterparties swept (denominator).
+            threshold:
+              type:
+              - number
+              - 'null'
+            best_score:
+              type:
+              - number
+              - 'null'
+            median_score:
+              type:
+              - number
+              - 'null'
+            bands:
+              type: object
+              description: Score-band distribution of the matched set (50-55 / 55-60 / 60-65 / 65+).
+              additionalProperties:
+                type: integer
+            sectors:
+              type: array
+              items:
+                type: object
+                properties:
+                  sector:
+                    type: string
+                  count:
+                    type: integer
+            avg_data_quality:
+              type:
+              - number
+              - 'null'
+            scored:
+              type:
+              - integer
+              - 'null'
+            unscored:
+              type:
+              - integer
+              - 'null'
+            computed_at:
+              type:
+              - number
+              - 'null'
+            cached:
+              type: boolean
+            truncated:
+              type: boolean
+              description: True when the ranked list was capped.
+        fresh:
+          type: object
+          description: Freshness over the matched set. A counterparty's "last touch" is the later of its own record timestamp and its newest enrichment/update event; most sellers have no created_at, so the event is the signal.
+          properties:
+            window_days:
+              type: integer
+            counts:
+              type: object
+              description: Matched counterparties touched within 7 / 30 / 90 days.
+              additionalProperties:
+                type: integer
+            count:
+              type: integer
+            items:
+              type: array
+              description: Newest touches first (capped at 12).
+              items:
+                $ref: '#/components/schemas/DealFlowCounterparty'
+        top:
+          type: array
+          description: The ranked fits (capped at 25).
+          items:
+            $ref: '#/components/schemas/DealFlowCounterparty'
+        watchlist:
+          type: array
+          description: Counterparties this session pinned, with their current fit, data quality and pairing phase.
+          items:
+            type: object
+            properties:
+              entity_type:
+                type: string
+                enum:
+                - seller
+                - buyer
+              entity_id:
+                type: integer
+              note:
+                type: string
+              watched_at:
+                type: string
+              name:
+                type:
+                - string
+                - 'null'
+                description: Null until the agreement is confirmed.
+              score:
+                type:
+                - number
+                - 'null'
+              data_quality:
+                type:
+                - integer
+                - 'null'
+              phase:
+                type:
+                - string
+                - 'null'
+    WatchlistRequest:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        entity_type:
+          type: string
+          enum:
+          - seller
+          - buyer
+        entity_id:
+          type: integer
+        action:
+          type: string
+          enum:
+          - add
+          - remove
+          default: add
+        note:
+          type: string
+      required:
+      - session_id
+      - entity_type
+      - entity_id
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

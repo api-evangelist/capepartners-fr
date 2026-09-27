@@ -1,0 +1,241 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Info Memos API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged InfoMemos across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: InfoMemos
+paths:
+  /api/infomemo/{session_id}:
+    get:
+      summary: Generate/retrieve the InfoMemo markdown for the session. NDA-gated
+      tags:
+      - InfoMemos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoMemo'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      security:
+      - SessionToken: []
+        NdaSigned: []
+      operationId: getApiInfomemoBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/infomemo/{session_id}/download:
+    get:
+      summary: Download the InfoMemo markdown with appended matched names and NDA block
+      tags:
+      - InfoMemos
+      responses:
+        '200':
+          description: InfoMemo markdown download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        '404':
+          description: InfoMemo not found
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      security:
+      - SessionToken: []
+        NdaSigned: []
+      operationId: getApiInfomemoBySessionIdDownload
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/light-infomemo/{session_id}/{pair_id}:
+    get:
+      summary: Generate and stream a light (Cape-branded teaser) InfoMemo PDF for a pairing…
+      tags:
+      - InfoMemos
+      responses:
+        '200':
+          description: PDF download
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Pairing not scoped to this session
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Not scoped
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      - name: pair_id
+        in: path
+        required: true
+        schema:
+          type: string
+      operationId: getApiLightInfomemoBySessionIdByPairId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/product-analysis/{session_id}/{pairing_id}:
+    get:
+      summary: Return seller product analysis for a pairing scoped to the requesting session…
+      tags:
+      - InfoMemos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductAnalysis'
+        '403':
+          description: Pairing not scoped to this session
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Not scoped
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '404':
+          description: No product analysis for this pairing
+          content:
+            application/json:
+              schema:
+                type: object
+                description: No product analysis
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      - name: pairing_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      operationId: getApiProductAnalysisBySessionIdByPairingId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    ProductAnalysis:
+      type: object
+      properties:
+        pairing_id:
+          type: string
+        website_url:
+          type: string
+        product_summary:
+          type: string
+        tech_stack:
+          type: string
+        quality_score:
+          type: number
+        buyer_fit_notes:
+          type: string
+        consolidation_potential:
+          type: string
+        last_analyzed_at:
+          type: string
+        buyer_solution_scope_1:
+          type: string
+        buyer_solution_scope_2:
+          type: string
+        buyer_solution_scope_3:
+          type: string
+        tech_stack_flags:
+          type: string
+        fit_score:
+          type: number
+        data_quality_flags:
+          type: string
+    InfoMemo:
+      type: object
+      properties:
+        markdown:
+          type: string
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

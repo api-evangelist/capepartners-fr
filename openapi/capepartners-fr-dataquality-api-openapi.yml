@@ -1,0 +1,96 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Data Quality API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged DataQuality across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: DataQuality
+paths:
+  /api/dq/enqueue:
+    security:
+    - SessionToken: []
+    post:
+      summary: Enqueue high-priority data-quality improvement steps for a seller or buyer for…
+      tags:
+      - DataQuality
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DqEnqueueResponse'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DqEnqueueRequest'
+      operationId: postApiDqEnqueue
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    DqEnqueueResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        enqueued:
+          type: integer
+        steps:
+          type: array
+          items:
+            type: string
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
+    DqEnqueueRequest:
+      type: object
+      properties:
+        entity_type:
+          type: string
+          enum:
+          - seller
+          - buyer
+        entity_id:
+          type: integer
+        steps:
+          type: array
+          items:
+            type: string
+          description: 'Default seller steps: [siren, financials, president, advisor, contacts, product]; buyer: [discovery, profile]'
+      required:
+      - entity_type
+      - entity_id
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

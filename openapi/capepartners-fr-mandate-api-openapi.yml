@@ -1,0 +1,295 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Mandate API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Mandate across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Mandate
+paths:
+  /api/mandate/{session_id}:
+    get:
+      summary: 'The mandate capability for this session: role (buyer/seller), the embedded Cape…'
+      tags:
+      - Mandate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role:
+                    type: string
+                    enum:
+                    - buyer
+                    - seller
+                  template:
+                    type: object
+                  template_preview:
+                    type: string
+                  default_retainer:
+                    type: integer
+                  default_fee_pct:
+                    type: number
+                  pairing_scope:
+                    type: array
+                    items:
+                      type: object
+                  proposals:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Malformed session identifier (UUID-v4 required)
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Invalid session identifier
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: Cross-origin request rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Cross-origin request rejected
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Too many requests
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      operationId: getApiMandateBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/mandate/{session_id}/preview:
+    get:
+      summary: Re-render the mandate template body with live retainer / fee % / deal-scope…
+      tags:
+      - Mandate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role:
+                    type: string
+                  template_preview:
+                    type: string
+                  pairing_count:
+                    type: integer
+        '404':
+          description: No buyer/seller bound to this session
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      - name: retainer
+        in: query
+        required: false
+        schema:
+          type: integer
+      - name: fee
+        in: query
+        required: false
+        schema:
+          type: number
+      - name: ids
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Comma-separated pairing ids to scope the mandate to
+      - name: client
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: email
+        in: query
+        required: false
+        schema:
+          type: string
+      operationId: getApiMandateBySessionIdPreview
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/mandate/request:
+    post:
+      summary: Record a mandate proposal request for a session pairing scope.
+      tags:
+      - Mandate
+      responses:
+        '201':
+          description: Mandate proposal request recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  id:
+                    type: integer
+                  session_id:
+                    type: string
+                  role:
+                    type: string
+                  pairing_count:
+                    type: integer
+                  retainer_eur:
+                    type: integer
+                  fee_pct:
+                    type: number
+                  template_id:
+                    type: string
+                  message:
+                    type: string
+        '400':
+          description: Empty or invalid body / session id
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Invalid session identifier
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: Cross-origin request rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Cross-origin request rejected
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '409':
+          description: No buyer/seller bound to this session yet
+          content:
+            application/json:
+              schema:
+                type: object
+                description: No buyer/seller bound to this session
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Too many requests
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - session_id
+              properties:
+                session_id:
+                  type: string
+                  format: uuid
+                pairing_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: Omit or pass all to request the whole pairing scope
+                retainer:
+                  type: integer
+                fee_pct:
+                  type: number
+      security:
+      - SessionToken: []
+      operationId: postApiMandateRequest
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

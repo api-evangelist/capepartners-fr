@@ -1,0 +1,391 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Identity API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Identity across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Identity
+paths:
+  /api/workspace/{session_id}:
+    get:
+      summary: Check whether a workspace UUID already holds visitor data.
+      tags:
+      - Identity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceInfo'
+        '403':
+          description: Cross-origin or guard rejection
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Guard rejection
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '404':
+          description: Workspace not found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Workspace not found
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      operationId: getApiWorkspaceBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/workspace/join:
+    post:
+      summary: Create/update a workspace with visitor identity; returns the session UUID to…
+      tags:
+      - Identity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceJoinResponse'
+        '400':
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Missing required fields
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: 'Email rejected / Turnstile failed / exchange handshake required (tier-2 gate: an agent must present an accepted manifest key before a NEW UUID is issued) / the uuid names an existing workspace this participant does not own (workspace_not_yours — a join never takes over an existing workspace, and the identity an agent supplies is recorded as an agent-declared, unverified claim, never as a person)'
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Exchange handshake required before a workspace UUID is issued
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceJoinRequest'
+      security: []
+      operationId: postApiWorkspaceJoin
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/session/{session_id}:
+    get:
+      summary: 'Load full session: identity, buyer/seller profile, data-quality, and valuation'
+      tags:
+      - Identity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionIdentity'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Session not found
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: Session authorization failed
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Guard rejection
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      operationId: getApiSessionBySessionId
+      x-operation-id-source: derived
+    post:
+      summary: Update session identity and buyer/seller profile (COALESCE upsert keeps…
+      tags:
+      - Identity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionIdentity'
+      operationId: postApiSessionBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    Identity:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Contact first/last name
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+        role:
+          type: string
+    WorkspaceJoinRequest:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+        exchange_key:
+          type: string
+          description: 'TIER-2 GATE. Required when an AGENT (no verified Turnstile token) is issued a NEW workspace UUID: the msgid from an ACCEPTED manifest, or its answer_key. The handshake precedes the UUID — without it the join is refused (403) and the agent keeps the tier-1 exchange inbox. A human-verified join and an existing workspace are exempt.'
+        turnstileToken:
+          type: string
+          description: Optional Cloudflare Turnstile token from a human solving the widget on the Join form. If provided it must verify or the join is refused (403). An agent POSTing directly sends none and stays classified as an agent by the NDA email actor-gate.
+      required:
+      - uuid
+      - name
+      - email
+      - company
+    SellerProfile:
+      type: object
+      properties:
+        revenue:
+          type: number
+          description: Revenue in EUR millions
+        growth:
+          type: number
+          description: Revenue growth, percent
+        ebitda_margin:
+          type: number
+          description: EBITDA margin, percent
+        product:
+          type: string
+          description: Product/solution description
+        sector:
+          type: string
+        description:
+          type: string
+        data_quality:
+          type: integer
+          description: Data-quality score /10
+        missing_fields:
+          type: array
+          items:
+            type: string
+    WorkspaceInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+        user_type:
+          type: string
+        created_at:
+          type: string
+    WorkspaceJoinResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+    SessionIdentity:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        identity:
+          $ref: '#/components/schemas/Identity'
+        user_type:
+          type: string
+          enum:
+          - investor
+          - buyer
+          - opportunity
+          - seller
+        buyer:
+          $ref: '#/components/schemas/BuyerProfile'
+        seller:
+          $ref: '#/components/schemas/SellerProfile'
+        valuation:
+          $ref: '#/components/schemas/Valuation'
+    BuyerProfile:
+      type: object
+      properties:
+        sector:
+          type: string
+        check_size_min:
+          type: number
+          description: Ticket (deal size) min, in EUR millions
+        check_size_max:
+          type: number
+          description: Ticket (deal size) max, in EUR millions
+        geography:
+          type: string
+        growth_target:
+          type: number
+          description: Target revenue growth, percent
+        ebitda_target:
+          type: number
+          description: Target EBITDA margin, percent
+        solution_1:
+          type: string
+        solution_2:
+          type: string
+        solution_3:
+          type: string
+        data_quality:
+          type: integer
+          description: Data-quality score /10
+        missing_fields:
+          type: array
+          items:
+            type: string
+    Valuation:
+      type: object
+      properties:
+        valuation_revenue:
+          type: number
+          format: float
+        valuation_ebitda:
+          type: number
+          format: float
+        valuation_dcf:
+          type: number
+          format: float
+        valuation_conservative:
+          type: number
+          format: float
+        valuation_triangulated:
+          type: number
+          format: float
+        status:
+          type: string
+          enum:
+          - ok
+          - no_data
+        message:
+          type: string
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

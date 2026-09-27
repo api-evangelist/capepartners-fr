@@ -1,0 +1,228 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Matching API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Matching across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Matching
+paths:
+  /api/matches/{session_id}:
+    get:
+      summary: Find suggested matches for the session (buyer→sellers or seller→buyers).
+      tags:
+      - Matching
+      responses:
+        '200':
+          description: Ranked match list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Match'
+                description: Ranked matches
+        '404':
+          description: No buyer or seller for this session
+          content:
+            application/json:
+              schema:
+                type: object
+                description: No buyer or seller
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: Session authorization failed
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Guard rejection
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+        description: Max matches returned; 0 = the full scored universe. Values above 50 are still logged only up to the 50-pair cap.
+      operationId: getApiMatchesBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/matched-names/{session_id}:
+    get:
+      summary: Reveal non-redacted matched company names for a session. NDA-signature-gated
+      tags:
+      - Matching
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchedNames'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      security:
+      - SessionToken: []
+        NdaSigned: []
+      operationId: getApiMatchedNamesBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/seller-name/{session_id}:
+    get:
+      summary: Resolve an entity name by ID, but ONLY for entities within the requesting…
+      tags:
+      - Matching
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityName'
+        '403':
+          description: NDA not signed or entity not scoped to this session
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Not scoped / NDA required
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '404':
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Entity not found
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      - name: id
+        in: query
+        required: true
+        schema:
+          type: integer
+        description: Entity ID to resolve (must be within this session's scope)
+      security:
+      - SessionToken: []
+        NdaSigned: []
+      operationId: getApiSellerNameBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    Match:
+      type: object
+      description: A ranked counterparty match. Names are redacted (Company A/B/C…) and financial fit signals are returned as coarse bands inside `reasons` (strong/moderate/weak/poor) until an NDA is recorded. Full identity and granular metrics unlock only after POST /api/nda/sign.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          description: Redacted name (Company A/B/C…) unless NDA-gated reveal
+        score:
+          type: number
+          format: float
+          description: Overall fit score (deterministic x semantic)
+        scores:
+          type: object
+          description: Per-dimension deterministic sub-scores (revenue/growth/ebitda/deterministic/semantic)
+        data_quality:
+          type: number
+          format: float
+        reasons:
+          type: array
+          items:
+            type: string
+          description: 'Band-qualified fit reasons, e.g. "Revenue fit: strong vs range €2M–€50M" (no raw revenue/growth/EBITDA)'
+    MatchedNames:
+      type: object
+      properties:
+        names:
+          type: array
+          items:
+            type: string
+          description: Non-redacted counterparty names (NDA-gated)
+    EntityName:
+      type: object
+      properties:
+        name:
+          type: string
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml

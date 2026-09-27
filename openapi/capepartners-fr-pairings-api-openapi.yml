@@ -1,0 +1,489 @@
+openapi: 3.2.0
+info:
+  title: Capepartners Fr Pairings API
+  version: 1.0.0
+  contact:
+    name: Cape Partners
+    url: https://www.capepartners.fr
+  description: 'Operations tagged Pairings across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://www.capepartners.fr
+  description: Production (www) via Cloudflare
+- url: https://sniffer.capepartners.fr
+  description: Workspace host
+- url: http://localhost:3000
+  description: Local dev
+tags:
+- name: Pairings
+paths:
+  /api/pairings/{session_id}:
+    get:
+      summary: Return pairings for the session (as buyer or seller), with match score, phase…
+      tags:
+      - Pairings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PairingsResponse'
+        '404':
+          description: No buyer or seller for this session
+          content:
+            application/json:
+              schema:
+                type: object
+                description: No buyer or seller
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: Session authorization failed
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Guard rejection
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Workspace session UUID (acts as the scoped credential)
+      operationId: getApiPairingsBySessionId
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/pairings/create:
+    post:
+      summary: Create a new pairing (pair-{buyer_id}-{seller_id}) between a buyer and seller
+      tags:
+      - Pairings
+      responses:
+        '201':
+          description: Pairing created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PairingCreateResponse'
+        '409':
+          description: Pairing already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  pair_id:
+                    type: string
+        '400':
+          description: buyer_id and seller_id required
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Missing ids
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PairingCreateRequest'
+      operationId: postApiPairingsCreate
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/pairings/update_phase:
+    post:
+      summary: Bulk-update deal phase for one or more pairings.
+      tags:
+      - Pairings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhaseUpdateResponse'
+        '400':
+          description: No pair_ids provided or invalid phase
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Invalid phase
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pair_ids:
+                  type: array
+                  items:
+                    type: string
+                phase:
+                  type: string
+                session_id:
+                  type: string
+                  description: Workspace session UUID of the acting party. Omit for a non-party (agent/batch) caller, which applies the change directly unless a request is pending.
+              required:
+              - pair_ids
+              - phase
+      operationId: postApiPairingsUpdatePhase
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+  /api/pairings/phase-request:
+    post:
+      summary: Answer a pending phase-change request — the other half of the mutual-consent…
+      tags:
+      - Pairings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhaseRequestDecisionResponse'
+        '400':
+          description: Bad decision or missing pair_id/request_id
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Bad decision
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '403':
+          description: Wrong party for this request (only the counterparty confirms/dismisses, only the requester cancels)
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Not your request
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '409':
+          description: No pending request for this pairing (already resolved, or never raised)
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Already resolved
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+        '404':
+          description: No pending request for this pairing
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Not found
+                properties:
+                  error:
+                    type: string
+                required:
+                - error
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pair_id:
+                  type: string
+                request_id:
+                  type: integer
+                decision:
+                  type: string
+                  enum:
+                  - confirm
+                  - dismiss
+                  - cancel
+                session_id:
+                  type: string
+                  description: Workspace session UUID of the answering party (required).
+              required:
+              - decision
+              - session_id
+      operationId: postApiPairingsPhaseRequest
+      x-operation-id-source: derived
+    servers:
+    - url: https://www.capepartners.fr
+      description: Production (www) via Cloudflare
+    - url: https://sniffer.capepartners.fr
+      description: Workspace host
+    - url: http://localhost:3000
+      description: Local dev
+components:
+  schemas:
+    PendingPhaseRequest:
+      type: object
+      nullable: true
+      description: 'A live phase-change request on this pairing (mutual consent). While it exists the pairing is LOCKED: the phase stays visible but no phase change is accepted until the counterparty answers. Absent/null when nothing is pending.'
+      properties:
+        request_id:
+          type: integer
+        from_phase:
+          type: string
+        to_phase:
+          type: string
+        label:
+          type: string
+        created_at:
+          type: string
+        expires_at:
+          type: string
+          description: UTC timestamp at which the request lapses automatically (lazy expiry, default TTL 14 days, configurable via CONSENT_REQUEST_TTL_DAYS).
+        ttl_days:
+          type: integer
+        requested_by:
+          type: string
+          enum:
+          - me
+          - counterparty
+          description: '''counterparty'' = this session must confirm or dismiss it; ''me'' = this session raised it and is waiting (it may cancel).'
+        requested_by_side:
+          type: string
+          enum:
+          - buyer
+          - seller
+    PhaseUpdateResponse:
+      type: object
+      properties:
+        updated:
+          type: integer
+        pair_ids:
+          type: array
+          items:
+            type: string
+        phase:
+          type: string
+        requested:
+          type: array
+          description: Changes raised for the counterparty to confirm instead of applied (mutual consent).
+          items:
+            type: object
+            properties:
+              request_id:
+                type: integer
+              pair_id:
+                type: string
+              from_phase:
+                type: string
+              to_phase:
+                type: string
+              requested_by:
+                type: string
+              counterparty_session:
+                type: string
+        blocked:
+          type: array
+          description: Pairings left untouched because a phase change is already awaiting a decision (the pairing is locked).
+          items:
+            type: object
+            properties:
+              pair_id:
+                type: string
+              reason:
+                type: string
+                enum:
+                - awaiting_confirmation
+                - no_counterparty
+    PairingCreateRequest:
+      type: object
+      properties:
+        buyer_id:
+          type: integer
+        seller_id:
+          type: integer
+        match_score:
+          type: number
+          default: 0
+        phase:
+          type: string
+          default: 0_prospecting
+      required:
+      - buyer_id
+      - seller_id
+    Pairing:
+      type: object
+      properties:
+        pair_id:
+          type: string
+          example: pair-12-345
+        buyer_id:
+          type: integer
+        seller_id:
+          type: integer
+        match_score:
+          type: number
+          format: float
+        phase:
+          type: string
+        valuation:
+          type: number
+          format: float
+        valuation_triangulated:
+          type: number
+          format: float
+        updated_at:
+          type: string
+        buyer_name:
+          type: string
+        seller_name:
+          type: string
+        buyer_sector:
+          type: string
+        seller_sector:
+          type: string
+        seller_revenue:
+          type: number
+        seller_growth:
+          type: number
+        seller_ebitda:
+          type: number
+        seller_product:
+          type: string
+        seller_contact_name:
+          type: string
+        seller_contact_email:
+          type: string
+        seller_data_quality:
+          type: integer
+        buyer_ticket_min:
+          type: number
+        buyer_ticket_max:
+          type: number
+        pairing_dbid:
+          type: integer
+        phase_request:
+          $ref: '#/components/schemas/PendingPhaseRequest'
+    PairingsResponse:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - buyer
+          - seller
+        buyer_id:
+          type: integer
+        seller_id:
+          type: integer
+        buyer_name:
+          type: string
+        seller_name:
+          type: string
+        pairings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pairing'
+        count:
+          type: integer
+    PairingCreateResponse:
+      type: object
+      properties:
+        pair_id:
+          type: string
+        buyer_id:
+          type: integer
+        seller_id:
+          type: integer
+        match_score:
+          type: number
+        phase:
+          type: string
+    PhaseRequestDecisionResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        decision:
+          type: string
+          enum:
+          - confirm
+          - dismiss
+          - cancel
+        status:
+          type: string
+          enum:
+          - confirmed
+          - dismissed
+          - cancelled
+          - expired
+        pair_id:
+          type: string
+        phase:
+          type: string
+          description: The pairing phase after the decision (unchanged for dismiss/cancel/expired).
+        reason:
+          type: string
+          nullable: true
+          enum:
+          - expired
+          - already_resolved
+          - null
+          description: '''expired'' when the request lapsed unanswered instead of being decided.'
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Id
+      description: 'The workspace session UUID is a capability token carried in the URL PATH (not this header — shown here only because OpenAPI securitySchemes cannot model a path parameter as a credential). A valid request must present a well-formed UUID-v4 in the path segment {session_id} AND a first-party Origin/Referer (or none). Requests carrying a known-foreign Origin/Referer are refused 403. Per-IP rate limiting applies. All responses carry Referrer-Policy: strict-origin-when-cross-origin.'
+    NdaSigned:
+      type: apiKey
+      in: header
+      name: X-Nda-Signed
+      description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
+x-refined-from:
+- capepartners-fr-openapi.json
+- capepartners-fr-openapi.yml
