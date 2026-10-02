@@ -381,3 +381,8 @@ x-a2a:
   grade: "flavored"
   protocol_version: "1.0"
   control: 404
+x-correction-request:
+  requested: '2026-10-02'
+  source:
+  - https://github.com/api-evangelist/capepartners-fr/issues/1
+  request: 'Issue #1 (raphaeltinot-sketch, Cape Partners), verified 2026-10-02. The A2A grade ''Flavored / no-protocolVersion'' is OUR grader defect, not a card deviation: https://www.capepartners.fr/.well-known/agent-card.json is a valid A2A 1.0 card - no top-level protocolVersion or url (correct for 1.0), supportedInterfaces[] with two entries (https://www.capepartners.fr/a2a, protocolBinding JSONRPC and HTTP+JSON, protocolVersion ''1.0'' each), name, description, version 1.0.0, provider, documentationUrl, capabilities object (streaming/pushNotifications/extendedAgentCard false), defaultInputModes, defaultOutputModes, securitySchemes, and 2 skills each with id/name/description/tags. The /a2a JSON-RPC endpoint answers GetTask with a proper A2A TASK_NOT_FOUND error. The fixed grader (gradeAgentCard reads supportedInterfaces[].protocolVersion, roadmap#611; network lib_agent_card.py 9ab6c0cb4) deploys after the 2026-10-02 Friday build (this weekend) (PENDING-DEPLOY item 116). Re-profile AFTER that deploy so the card is re-graded with the 1.0 reader; do NOT ask the provider to add a top-level protocolVersion and do not record no-protocolVersion as a deviation.'
