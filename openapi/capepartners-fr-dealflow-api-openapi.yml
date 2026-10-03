@@ -1,11 +1,11 @@
 openapi: 3.2.0
 info:
-  title: Capepartners Fr Deal Flow API
+  title: Cape Partners — Sniffer Agent Deal Flow API
   version: 1.0.0
+  description: Machine-readable API backing the Cape Partners M&A deal-flow workspace (click, humans).
   contact:
     name: Cape Partners
     url: https://www.capepartners.fr
-  description: 'Operations tagged DealFlow across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://www.capepartners.fr
   description: Production (www) via Cloudflare
@@ -53,13 +53,6 @@ paths:
       - SessionToken: []
       operationId: getApiDealFlowBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/watchlist:
     post:
       summary: Pin or unpin a counterparty on this session's Deal Flow watchlist.
@@ -118,111 +111,8 @@ paths:
       - SessionToken: []
       operationId: postApiWatchlist
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
 components:
   schemas:
-    WatchlistResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        action:
-          type: string
-        entity_type:
-          type: string
-        watched:
-          type: array
-          items:
-            type: integer
-          description: The session's remaining watched ids of that entity_type.
-    DealFlowCounterparty:
-      type: object
-      properties:
-        id:
-          type: integer
-        type:
-          type: string
-          enum:
-          - seller
-          - buyer
-        name:
-          type: string
-          description: Real name when names_revealed, else "Company <letter>".
-        revealed:
-          type: boolean
-        score:
-          type: number
-          description: Canonical fit score (deterministic x semantic).
-        sector:
-          type: string
-        data_quality:
-          type: number
-        created_at:
-          type:
-          - string
-          - 'null'
-        last_touch:
-          type:
-          - string
-          - 'null'
-          description: Null when the counterparty has neither a record timestamp nor any logged event — reported as unknown, never invented.
-        touch_kind:
-          type: string
-          enum:
-          - sourced
-          - enriched
-        paired_phase:
-          type:
-          - string
-          - 'null'
-          description: Phase of this pairing for the session, when one exists.
-        watched:
-          type: boolean
-        has_session:
-          type: boolean
-        revenue:
-          type:
-          - number
-          - 'null'
-          description: Seller counterparties only.
-        growth:
-          type:
-          - number
-          - 'null'
-          description: Seller counterparties only (fraction).
-        ebitda_margin:
-          type:
-          - number
-          - 'null'
-        valuation:
-          type:
-          - number
-          - 'null'
-        geography:
-          type: string
-        ticket_min:
-          type:
-          - number
-          - 'null'
-          description: Buyer counterparties only.
-        ticket_max:
-          type:
-          - number
-          - 'null'
-        growth_target:
-          type:
-          - number
-          - 'null'
-        ebitda_target:
-          type:
-          - number
-          - 'null'
     DealFlowResponse:
       type: object
       description: 'The supply-side counterpart of the Interest Signals card: the counterparty universe that matches the session''s OWN mandate, ranked, with what is new and the session''s watchlist. Names are masked ("Company A") until the session''s agreement is confirmed — the same reveal rule as /api/matches — so the payload is safe to render pre-reveal. Shares ONE memoised universe sweep with GET /api/interest-signals (24h TTL per entity).'
@@ -389,6 +279,102 @@ components:
       - session_id
       - entity_type
       - entity_id
+    WatchlistResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        action:
+          type: string
+        entity_type:
+          type: string
+        watched:
+          type: array
+          items:
+            type: integer
+          description: The session's remaining watched ids of that entity_type.
+    DealFlowCounterparty:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+          - seller
+          - buyer
+        name:
+          type: string
+          description: Real name when names_revealed, else "Company <letter>".
+        revealed:
+          type: boolean
+        score:
+          type: number
+          description: Canonical fit score (deterministic x semantic).
+        sector:
+          type: string
+        data_quality:
+          type: number
+        created_at:
+          type:
+          - string
+          - 'null'
+        last_touch:
+          type:
+          - string
+          - 'null'
+          description: Null when the counterparty has neither a record timestamp nor any logged event — reported as unknown, never invented.
+        touch_kind:
+          type: string
+          enum:
+          - sourced
+          - enriched
+        paired_phase:
+          type:
+          - string
+          - 'null'
+          description: Phase of this pairing for the session, when one exists.
+        watched:
+          type: boolean
+        has_session:
+          type: boolean
+        revenue:
+          type:
+          - number
+          - 'null'
+          description: Seller counterparties only.
+        growth:
+          type:
+          - number
+          - 'null'
+          description: Seller counterparties only (fraction).
+        ebitda_margin:
+          type:
+          - number
+          - 'null'
+        valuation:
+          type:
+          - number
+          - 'null'
+        geography:
+          type: string
+        ticket_min:
+          type:
+          - number
+          - 'null'
+          description: Buyer counterparties only.
+        ticket_max:
+          type:
+          - number
+          - 'null'
+        growth_target:
+          type:
+          - number
+          - 'null'
+        ebitda_target:
+          type:
+          - number
+          - 'null'
   securitySchemes:
     SessionToken:
       type: apiKey
@@ -400,6 +386,3 @@ components:
       in: header
       name: X-Nda-Signed
       description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
-x-refined-from:
-- capepartners-fr-openapi.json
-- capepartners-fr-openapi.yml

@@ -1,11 +1,11 @@
 openapi: 3.2.0
 info:
-  title: Capepartners Fr Pairings API
+  title: Cape Partners — Sniffer Agent Pairings API
   version: 1.0.0
+  description: Machine-readable API backing the Cape Partners M&A deal-flow workspace (click, humans).
   contact:
     name: Cape Partners
     url: https://www.capepartners.fr
-  description: 'Operations tagged Pairings across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://www.capepartners.fr
   description: Production (www) via Cloudflare
@@ -62,13 +62,6 @@ paths:
         description: Workspace session UUID (acts as the scoped credential)
       operationId: getApiPairingsBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/pairings/create:
     post:
       summary: Create a new pairing (pair-{buyer_id}-{seller_id}) between a buyer and seller
@@ -112,13 +105,6 @@ paths:
               $ref: '#/components/schemas/PairingCreateRequest'
       operationId: postApiPairingsCreate
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/pairings/update_phase:
     post:
       summary: Bulk-update deal phase for one or more pairings.
@@ -164,13 +150,6 @@ paths:
               - phase
       operationId: postApiPairingsUpdatePhase
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/pairings/phase-request:
     post:
       summary: Answer a pending phase-change request — the other half of the mutual-consent…
@@ -256,46 +235,43 @@ paths:
               - session_id
       operationId: postApiPairingsPhaseRequest
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
 components:
   schemas:
-    PendingPhaseRequest:
+    PairingCreateResponse:
       type: object
-      nullable: true
-      description: 'A live phase-change request on this pairing (mutual consent). While it exists the pairing is LOCKED: the phase stays visible but no phase change is accepted until the counterparty answers. Absent/null when nothing is pending.'
       properties:
-        request_id:
+        pair_id:
+          type: string
+        buyer_id:
           type: integer
-        from_phase:
-          type: string
-        to_phase:
-          type: string
-        label:
-          type: string
-        created_at:
-          type: string
-        expires_at:
-          type: string
-          description: UTC timestamp at which the request lapses automatically (lazy expiry, default TTL 14 days, configurable via CONSENT_REQUEST_TTL_DAYS).
-        ttl_days:
+        seller_id:
           type: integer
-        requested_by:
+        match_score:
+          type: number
+        phase:
           type: string
-          enum:
-          - me
-          - counterparty
-          description: '''counterparty'' = this session must confirm or dismiss it; ''me'' = this session raised it and is waiting (it may cancel).'
-        requested_by_side:
+    PairingsResponse:
+      type: object
+      properties:
+        role:
           type: string
           enum:
           - buyer
           - seller
+        buyer_id:
+          type: integer
+        seller_id:
+          type: integer
+        buyer_name:
+          type: string
+        seller_name:
+          type: string
+        pairings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pairing'
+        count:
+          type: integer
     PhaseUpdateResponse:
       type: object
       properties:
@@ -354,6 +330,37 @@ components:
       required:
       - buyer_id
       - seller_id
+    PendingPhaseRequest:
+      type: object
+      nullable: true
+      description: 'A live phase-change request on this pairing (mutual consent). While it exists the pairing is LOCKED: the phase stays visible but no phase change is accepted until the counterparty answers. Absent/null when nothing is pending.'
+      properties:
+        request_id:
+          type: integer
+        from_phase:
+          type: string
+        to_phase:
+          type: string
+        label:
+          type: string
+        created_at:
+          type: string
+        expires_at:
+          type: string
+          description: UTC timestamp at which the request lapses automatically (lazy expiry, default TTL 14 days, configurable via CONSENT_REQUEST_TTL_DAYS).
+        ttl_days:
+          type: integer
+        requested_by:
+          type: string
+          enum:
+          - me
+          - counterparty
+          description: '''counterparty'' = this session must confirm or dismiss it; ''me'' = this session raised it and is waiting (it may cancel).'
+        requested_by_side:
+          type: string
+          enum:
+          - buyer
+          - seller
     Pairing:
       type: object
       properties:
@@ -407,41 +414,6 @@ components:
           type: integer
         phase_request:
           $ref: '#/components/schemas/PendingPhaseRequest'
-    PairingsResponse:
-      type: object
-      properties:
-        role:
-          type: string
-          enum:
-          - buyer
-          - seller
-        buyer_id:
-          type: integer
-        seller_id:
-          type: integer
-        buyer_name:
-          type: string
-        seller_name:
-          type: string
-        pairings:
-          type: array
-          items:
-            $ref: '#/components/schemas/Pairing'
-        count:
-          type: integer
-    PairingCreateResponse:
-      type: object
-      properties:
-        pair_id:
-          type: string
-        buyer_id:
-          type: integer
-        seller_id:
-          type: integer
-        match_score:
-          type: number
-        phase:
-          type: string
     PhaseRequestDecisionResponse:
       type: object
       properties:
@@ -484,6 +456,3 @@ components:
       in: header
       name: X-Nda-Signed
       description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
-x-refined-from:
-- capepartners-fr-openapi.json
-- capepartners-fr-openapi.yml

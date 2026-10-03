@@ -1,11 +1,11 @@
 openapi: 3.2.0
 info:
-  title: Capepartners Fr Identity API
+  title: Cape Partners — Sniffer Agent Identity API
   version: 1.0.0
+  description: Machine-readable API backing the Cape Partners M&A deal-flow workspace (click, humans).
   contact:
     name: Cape Partners
     url: https://www.capepartners.fr
-  description: 'Operations tagged Identity across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://www.capepartners.fr
   description: Production (www) via Cloudflare
@@ -62,13 +62,6 @@ paths:
         description: Workspace session UUID (acts as the scoped credential)
       operationId: getApiWorkspaceBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/workspace/join:
     post:
       summary: Create/update a workspace with visitor identity; returns the session UUID to…
@@ -114,13 +107,6 @@ paths:
       security: []
       operationId: postApiWorkspaceJoin
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/session/{session_id}:
     get:
       summary: 'Load full session: identity, buyer/seller profile, data-quality, and valuation'
@@ -199,125 +185,8 @@ paths:
               $ref: '#/components/schemas/SessionIdentity'
       operationId: postApiSessionBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
 components:
   schemas:
-    Identity:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Contact first/last name
-        email:
-          type: string
-          format: email
-        company:
-          type: string
-        role:
-          type: string
-    WorkspaceJoinRequest:
-      type: object
-      properties:
-        uuid:
-          type: string
-          format: uuid
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        company:
-          type: string
-        exchange_key:
-          type: string
-          description: 'TIER-2 GATE. Required when an AGENT (no verified Turnstile token) is issued a NEW workspace UUID: the msgid from an ACCEPTED manifest, or its answer_key. The handshake precedes the UUID — without it the join is refused (403) and the agent keeps the tier-1 exchange inbox. A human-verified join and an existing workspace are exempt.'
-        turnstileToken:
-          type: string
-          description: Optional Cloudflare Turnstile token from a human solving the widget on the Join form. If provided it must verify or the join is refused (403). An agent POSTing directly sends none and stays classified as an agent by the NDA email actor-gate.
-      required:
-      - uuid
-      - name
-      - email
-      - company
-    SellerProfile:
-      type: object
-      properties:
-        revenue:
-          type: number
-          description: Revenue in EUR millions
-        growth:
-          type: number
-          description: Revenue growth, percent
-        ebitda_margin:
-          type: number
-          description: EBITDA margin, percent
-        product:
-          type: string
-          description: Product/solution description
-        sector:
-          type: string
-        description:
-          type: string
-        data_quality:
-          type: integer
-          description: Data-quality score /10
-        missing_fields:
-          type: array
-          items:
-            type: string
-    WorkspaceInfo:
-      type: object
-      properties:
-        name:
-          type: string
-        email:
-          type: string
-        company:
-          type: string
-        user_type:
-          type: string
-        created_at:
-          type: string
-    WorkspaceJoinResponse:
-      type: object
-      properties:
-        session_id:
-          type: string
-        uuid:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        company:
-          type: string
-    SessionIdentity:
-      type: object
-      properties:
-        session_id:
-          type: string
-          format: uuid
-        identity:
-          $ref: '#/components/schemas/Identity'
-        user_type:
-          type: string
-          enum:
-          - investor
-          - buyer
-          - opportunity
-          - seller
-        buyer:
-          $ref: '#/components/schemas/BuyerProfile'
-        seller:
-          $ref: '#/components/schemas/SellerProfile'
-        valuation:
-          $ref: '#/components/schemas/Valuation'
     BuyerProfile:
       type: object
       properties:
@@ -350,6 +219,90 @@ components:
           type: array
           items:
             type: string
+    SessionIdentity:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        identity:
+          $ref: '#/components/schemas/Identity'
+        user_type:
+          type: string
+          enum:
+          - investor
+          - buyer
+          - opportunity
+          - seller
+        buyer:
+          $ref: '#/components/schemas/BuyerProfile'
+        seller:
+          $ref: '#/components/schemas/SellerProfile'
+        valuation:
+          $ref: '#/components/schemas/Valuation'
+    Identity:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Contact first/last name
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+        role:
+          type: string
+    WorkspaceJoinResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+    WorkspaceInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+        user_type:
+          type: string
+        created_at:
+          type: string
+    WorkspaceJoinRequest:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+        exchange_key:
+          type: string
+          description: 'TIER-2 GATE. Required when an AGENT (no verified Turnstile token) is issued a NEW workspace UUID: the msgid from an ACCEPTED manifest, or its answer_key. The handshake precedes the UUID — without it the join is refused (403) and the agent keeps the tier-1 exchange inbox. A human-verified join and an existing workspace are exempt.'
+        turnstileToken:
+          type: string
+          description: Optional Cloudflare Turnstile token from a human solving the widget on the Join form. If provided it must verify or the join is refused (403). An agent POSTing directly sends none and stays classified as an agent by the NDA email actor-gate.
+      required:
+      - uuid
+      - name
+      - email
+      - company
     Valuation:
       type: object
       properties:
@@ -375,6 +328,32 @@ components:
           - no_data
         message:
           type: string
+    SellerProfile:
+      type: object
+      properties:
+        revenue:
+          type: number
+          description: Revenue in EUR millions
+        growth:
+          type: number
+          description: Revenue growth, percent
+        ebitda_margin:
+          type: number
+          description: EBITDA margin, percent
+        product:
+          type: string
+          description: Product/solution description
+        sector:
+          type: string
+        description:
+          type: string
+        data_quality:
+          type: integer
+          description: Data-quality score /10
+        missing_fields:
+          type: array
+          items:
+            type: string
   securitySchemes:
     SessionToken:
       type: apiKey
@@ -386,6 +365,3 @@ components:
       in: header
       name: X-Nda-Signed
       description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
-x-refined-from:
-- capepartners-fr-openapi.json
-- capepartners-fr-openapi.yml

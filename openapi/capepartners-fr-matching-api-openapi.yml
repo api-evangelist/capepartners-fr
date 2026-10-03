@@ -1,11 +1,11 @@
 openapi: 3.2.0
 info:
-  title: Capepartners Fr Matching API
+  title: Cape Partners — Sniffer Agent Matching API
   version: 1.0.0
+  description: Machine-readable API backing the Cape Partners M&A deal-flow workspace (click, humans).
   contact:
     name: Cape Partners
     url: https://www.capepartners.fr
-  description: 'Operations tagged Matching across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://www.capepartners.fr
   description: Production (www) via Cloudflare
@@ -72,13 +72,6 @@ paths:
         description: Max matches returned; 0 = the full scored universe. Values above 50 are still logged only up to the 50-pair cap.
       operationId: getApiMatchesBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/matched-names/{session_id}:
     get:
       summary: Reveal non-redacted matched company names for a session. NDA-signature-gated
@@ -104,13 +97,6 @@ paths:
         NdaSigned: []
       operationId: getApiMatchedNamesBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/seller-name/{session_id}:
     get:
       summary: Resolve an entity name by ID, but ONLY for entities within the requesting…
@@ -166,15 +152,16 @@ paths:
         NdaSigned: []
       operationId: getApiSellerNameBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
 components:
   schemas:
+    MatchedNames:
+      type: object
+      properties:
+        names:
+          type: array
+          items:
+            type: string
+          description: Non-redacted counterparty names (NDA-gated)
     Match:
       type: object
       description: A ranked counterparty match. Names are redacted (Company A/B/C…) and financial fit signals are returned as coarse bands inside `reasons` (strong/moderate/weak/poor) until an NDA is recorded. Full identity and granular metrics unlock only after POST /api/nda/sign.
@@ -199,14 +186,6 @@ components:
           items:
             type: string
           description: 'Band-qualified fit reasons, e.g. "Revenue fit: strong vs range €2M–€50M" (no raw revenue/growth/EBITDA)'
-    MatchedNames:
-      type: object
-      properties:
-        names:
-          type: array
-          items:
-            type: string
-          description: Non-redacted counterparty names (NDA-gated)
     EntityName:
       type: object
       properties:
@@ -223,6 +202,3 @@ components:
       in: header
       name: X-Nda-Signed
       description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
-x-refined-from:
-- capepartners-fr-openapi.json
-- capepartners-fr-openapi.yml

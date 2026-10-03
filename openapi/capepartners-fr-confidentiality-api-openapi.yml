@@ -1,11 +1,11 @@
 openapi: 3.2.0
 info:
-  title: Capepartners Fr Confidentiality API
+  title: Cape Partners — Sniffer Agent Confidentiality API
   version: 1.0.0
+  description: Machine-readable API backing the Cape Partners M&A deal-flow workspace (click, humans).
   contact:
     name: Cape Partners
     url: https://www.capepartners.fr
-  description: 'Operations tagged Confidentiality across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://www.capepartners.fr
   description: Production (www) via Cloudflare
@@ -50,13 +50,6 @@ paths:
               $ref: '#/components/schemas/NdaSignRequest'
       operationId: postApiNdaSign
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/nda/text:
     get:
       summary: Return the full Cape Partners Terms of Service (plain text), the single…
@@ -71,13 +64,6 @@ paths:
                 $ref: '#/components/schemas/NdaTextResponse'
       operationId: getApiNdaText
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/tos/text:
     get:
       summary: Return the full Cape Partners Terms of Service (plain text).
@@ -92,31 +78,8 @@ paths:
                 $ref: '#/components/schemas/NdaTextResponse'
       operationId: getApiTosText
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
 components:
   schemas:
-    NdaSignResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        session_id:
-          type: string
-        nda_signed:
-          type: boolean
-    NdaTextResponse:
-      type: object
-      properties:
-        name:
-          type: string
-        text:
-          type: string
     NdaSignRequest:
       type: object
       properties:
@@ -136,6 +99,22 @@ components:
       required:
       - session_id
       - signer_name
+    NdaTextResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        text:
+          type: string
+    NdaSignResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        session_id:
+          type: string
+        nda_signed:
+          type: boolean
   securitySchemes:
     SessionToken:
       type: apiKey
@@ -147,6 +126,3 @@ components:
       in: header
       name: X-Nda-Signed
       description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
-x-refined-from:
-- capepartners-fr-openapi.json
-- capepartners-fr-openapi.yml

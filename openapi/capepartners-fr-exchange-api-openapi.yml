@@ -1,11 +1,11 @@
 openapi: 3.2.0
 info:
-  title: Capepartners Fr Exchange API
+  title: Cape Partners — Sniffer Agent Exchange API
   version: 1.0.0
+  description: Machine-readable API backing the Cape Partners M&A deal-flow workspace (click, humans).
   contact:
     name: Cape Partners
     url: https://www.capepartners.fr
-  description: 'Operations tagged Exchange across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://www.capepartners.fr
   description: Production (www) via Cloudflare
@@ -67,13 +67,6 @@ paths:
       security: []
       operationId: getWellKnownAgentCardJson
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /a2a:
     post:
       summary: A2A protocol v1.0 — the JSON-RPC 2.0 binding (one endpoint, operation names as…
@@ -107,13 +100,6 @@ paths:
       security: []
       operationId: postA2a
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /a2a/message:send:
     post:
       summary: A2A protocol v1.0 — HTTP+JSON binding for SendMessage.
@@ -138,13 +124,6 @@ paths:
       security: []
       operationId: postA2aMessage:send
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /a2a/tasks:
     get:
       summary: A2A protocol v1.0 — HTTP+JSON binding for ListTasks.
@@ -207,13 +186,6 @@ paths:
       security: []
       operationId: getA2aTasks
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /a2a/tasks/{id}:
     get:
       summary: A2A protocol v1.0 — HTTP+JSON binding for GetTask.
@@ -250,13 +222,6 @@ paths:
       security: []
       operationId: getA2aTasksById
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/exchange/spec:
     get:
       summary: 'Machine-readable form of the agent-exchange spec: how to publish a manifest…'
@@ -299,13 +264,6 @@ paths:
       security: []
       operationId: getApiExchangeSpec
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/exchange/manifest:
     post:
       summary: Publish an agent manifest.
@@ -449,13 +407,6 @@ paths:
       security: []
       operationId: postApiExchangeManifest
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/exchange/answer/{msgid}:
     get:
       summary: Fetch your exchange thread and any answer, keyed by the msgid from your…
@@ -539,13 +490,6 @@ paths:
       security: []
       operationId: getApiExchangeAnswerByMsgid
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/exchange/reply:
     post:
       summary: Answer in-thread using the same key you read with (your msgid or answer_key).
@@ -641,13 +585,6 @@ paths:
       security: []
       operationId: postApiExchangeReply
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /engage/{token}/thread:
     get:
       summary: 'Exchange return leg: read what the internal side wrote to the participant a…'
@@ -699,13 +636,6 @@ paths:
       security: []
       operationId: getEngageByTokenThread
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /engage/{token}/reply:
     post:
       summary: 'Exchange return leg: answer in-thread on a participant-bound token.'
@@ -775,13 +705,6 @@ paths:
       security: []
       operationId: postEngageByTokenReply
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
 components:
   schemas:
     A2ATask:
@@ -817,6 +740,22 @@ components:
                   $ref: '#/components/schemas/A2APart'
         metadata:
           type: object
+    A2APart:
+      type: object
+      description: One content part. `text` is read; a `data` part is serialised as JSON. File parts (url/raw) are ignored, never fetched.
+      properties:
+        text:
+          type: string
+        data: {}
+        url:
+          type: string
+        raw:
+          type: string
+          contentEncoding: base64
+        filename:
+          type: string
+        mediaType:
+          type: string
     A2AMessage:
       type: object
       required:
@@ -845,22 +784,6 @@ components:
           type: array
           items:
             type: string
-    A2APart:
-      type: object
-      description: One content part. `text` is read; a `data` part is serialised as JSON. File parts (url/raw) are ignored, never fetched.
-      properties:
-        text:
-          type: string
-        data: {}
-        url:
-          type: string
-        raw:
-          type: string
-          contentEncoding: base64
-        filename:
-          type: string
-        mediaType:
-          type: string
     A2ATaskStatus:
       type: object
       required:
@@ -929,6 +852,3 @@ components:
       in: header
       name: X-Nda-Signed
       description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
-x-refined-from:
-- capepartners-fr-openapi.json
-- capepartners-fr-openapi.yml

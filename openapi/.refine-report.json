@@ -1,8 +1,7 @@
 {
   "provider": "capepartners-fr",
   "sources": [
-    "_original/capepartners-fr-openapi.json",
-    "capepartners-fr-openapi.yml"
+    "_original/capepartners-fr-openapi.json"
   ],
   "outputs": [
     "capepartners-fr-activity-api-openapi.yml",
@@ -21,31 +20,31 @@
     "capepartners-fr-search-api-openapi.yml",
     "capepartners-fr-valuation-api-openapi.yml"
   ],
-  "archived": [
-    "archived openapi/capepartners-fr-openapi.yml"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
+    "1 archived document(s) dropped as subsets of other archived documents",
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
     "capepartners-fr-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "capepartners-fr-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "tag 'Activity' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Confidentiality' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'DataQuality' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'DealFlow' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Discovery' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Exchange' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Identity' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'InfoMemos' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Interest' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Mandate' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Matching' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Pairings' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Registration' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Search' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "tag 'Valuation' spans 2 source specs (capepartners-fr-openapi.json, capepartners-fr-openapi.yml): per-path servers applied",
-    "apis.yml register: written (+15 apis, 16 total)"
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "_original/capepartners-fr-openapi.yml: archived document superseded by a larger archived document",
+    "capepartners-fr-activity-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-confidentiality-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-dataquality-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-dealflow-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-discovery-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-exchange-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-identity-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-infomemos-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-interest-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-mandate-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-matching-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-pairings-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-registration-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-search-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "capepartners-fr-valuation-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

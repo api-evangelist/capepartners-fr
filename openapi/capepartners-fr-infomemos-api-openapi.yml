@@ -1,11 +1,11 @@
 openapi: 3.2.0
 info:
-  title: Capepartners Fr Info Memos API
+  title: Cape Partners — Sniffer Agent Info Memos API
   version: 1.0.0
+  description: Machine-readable API backing the Cape Partners M&A deal-flow workspace (click, humans).
   contact:
     name: Cape Partners
     url: https://www.capepartners.fr
-  description: 'Operations tagged InfoMemos across 2 of this provider''s published API definitions: capepartners-fr-openapi.json, capepartners-fr-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://www.capepartners.fr
   description: Production (www) via Cloudflare
@@ -41,13 +41,6 @@ paths:
         NdaSigned: []
       operationId: getApiInfomemoBySessionId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/infomemo/{session_id}/download:
     get:
       summary: Download the InfoMemo markdown with appended matched names and NDA block
@@ -75,13 +68,6 @@ paths:
         NdaSigned: []
       operationId: getApiInfomemoBySessionIdDownload
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/light-infomemo/{session_id}/{pair_id}:
     get:
       summary: Generate and stream a light (Cape-branded teaser) InfoMemo PDF for a pairing…
@@ -122,13 +108,6 @@ paths:
           type: string
       operationId: getApiLightInfomemoBySessionIdByPairId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
   /api/product-analysis/{session_id}/{pairing_id}:
     get:
       summary: Return seller product analysis for a pairing scoped to the requesting session…
@@ -180,13 +159,6 @@ paths:
           type: integer
       operationId: getApiProductAnalysisBySessionIdByPairingId
       x-operation-id-source: derived
-    servers:
-    - url: https://www.capepartners.fr
-      description: Production (www) via Cloudflare
-    - url: https://sniffer.capepartners.fr
-      description: Workspace host
-    - url: http://localhost:3000
-      description: Local dev
 components:
   schemas:
     ProductAnalysis:
@@ -236,6 +208,3 @@ components:
       in: header
       name: X-Nda-Signed
       description: 'Precondition (not a literal header): a server-side NDA signature for {session_id} must be recorded in the nda_signatures table via POST /api/nda/sign before NDA-gated resources (/api/matched-names, /api/infomemo/*) will serve data. Recorded signatures are enforced server-side (helper `nda_signed`), not by trusting a client header.'
-x-refined-from:
-- capepartners-fr-openapi.json
-- capepartners-fr-openapi.yml
