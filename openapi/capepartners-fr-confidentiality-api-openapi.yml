@@ -80,6 +80,22 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    NdaSignResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        session_id:
+          type: string
+        nda_signed:
+          type: boolean
+    NdaTextResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        text:
+          type: string
     NdaSignRequest:
       type: object
       properties:
@@ -99,22 +115,6 @@ components:
       required:
       - session_id
       - signer_name
-    NdaTextResponse:
-      type: object
-      properties:
-        name:
-          type: string
-        text:
-          type: string
-    NdaSignResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        session_id:
-          type: string
-        nda_signed:
-          type: boolean
   securitySchemes:
     SessionToken:
       type: apiKey

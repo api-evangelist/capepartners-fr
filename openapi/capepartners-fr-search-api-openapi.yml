@@ -46,21 +46,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    SearchResponse:
-      type: object
-      properties:
-        sellers:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchSeller'
-        buyers:
-          type: array
-          items:
-            $ref: '#/components/schemas/SearchBuyer'
-        total:
-          type: integer
-        query:
-          type: string
     SearchSeller:
       type: object
       properties:
@@ -102,6 +87,21 @@ components:
           type: string
         paired:
           type: boolean
+    SearchResponse:
+      type: object
+      properties:
+        sellers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchSeller'
+        buyers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchBuyer'
+        total:
+          type: integer
+        query:
+          type: string
   securitySchemes:
     SessionToken:
       type: apiKey

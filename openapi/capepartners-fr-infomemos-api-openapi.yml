@@ -161,6 +161,11 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    InfoMemo:
+      type: object
+      properties:
+        markdown:
+          type: string
     ProductAnalysis:
       type: object
       properties:
@@ -191,11 +196,6 @@ components:
         fit_score:
           type: number
         data_quality_flags:
-          type: string
-    InfoMemo:
-      type: object
-      properties:
-        markdown:
           type: string
   securitySchemes:
     SessionToken:

@@ -162,6 +162,11 @@ components:
           items:
             type: string
           description: Non-redacted counterparty names (NDA-gated)
+    EntityName:
+      type: object
+      properties:
+        name:
+          type: string
     Match:
       type: object
       description: A ranked counterparty match. Names are redacted (Company A/B/C…) and financial fit signals are returned as coarse bands inside `reasons` (strong/moderate/weak/poor) until an NDA is recorded. Full identity and granular metrics unlock only after POST /api/nda/sign.
@@ -186,11 +191,6 @@ components:
           items:
             type: string
           description: 'Band-qualified fit reasons, e.g. "Revenue fit: strong vs range €2M–€50M" (no raw revenue/growth/EBITDA)'
-    EntityName:
-      type: object
-      properties:
-        name:
-          type: string
   securitySchemes:
     SessionToken:
       type: apiKey

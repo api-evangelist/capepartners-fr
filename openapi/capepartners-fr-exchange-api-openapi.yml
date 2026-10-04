@@ -707,6 +707,37 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    A2ATaskStatus:
+      type: object
+      required:
+      - state
+      properties:
+        state:
+          type: string
+          enum:
+          - TASK_STATE_SUBMITTED
+          - TASK_STATE_INPUT_REQUIRED
+          - TASK_STATE_COMPLETED
+        timestamp:
+          type: string
+        message:
+          $ref: '#/components/schemas/A2AMessage'
+    A2APart:
+      type: object
+      description: One content part. `text` is read; a `data` part is serialised as JSON. File parts (url/raw) are ignored, never fetched.
+      properties:
+        text:
+          type: string
+        data: {}
+        url:
+          type: string
+        raw:
+          type: string
+          contentEncoding: base64
+        filename:
+          type: string
+        mediaType:
+          type: string
     A2ATask:
       type: object
       required:
@@ -740,21 +771,19 @@ components:
                   $ref: '#/components/schemas/A2APart'
         metadata:
           type: object
-    A2APart:
+    A2ASendMessageRequest:
       type: object
-      description: One content part. `text` is read; a `data` part is serialised as JSON. File parts (url/raw) are ignored, never fetched.
+      required:
+      - message
       properties:
-        text:
-          type: string
-        data: {}
-        url:
-          type: string
-        raw:
-          type: string
-          contentEncoding: base64
-        filename:
-          type: string
-        mediaType:
+        message:
+          $ref: '#/components/schemas/A2AMessage'
+        configuration:
+          type: object
+          description: A push-notification config here is refused with PushNotificationNotSupportedError (we never push).
+        metadata:
+          type: object
+        tenant:
           type: string
     A2AMessage:
       type: object
@@ -784,21 +813,6 @@ components:
           type: array
           items:
             type: string
-    A2ATaskStatus:
-      type: object
-      required:
-      - state
-      properties:
-        state:
-          type: string
-          enum:
-          - TASK_STATE_SUBMITTED
-          - TASK_STATE_INPUT_REQUIRED
-          - TASK_STATE_COMPLETED
-        timestamp:
-          type: string
-        message:
-          $ref: '#/components/schemas/A2AMessage'
     A2AJsonRpcRequest:
       type: object
       required:
@@ -827,20 +841,6 @@ components:
           description: v1.0 operation names. Only SendMessage, GetTask and ListTasks are served; the rest answer with the protocol's own errors, as the Agent Card declares.
         params:
           type: object
-    A2ASendMessageRequest:
-      type: object
-      required:
-      - message
-      properties:
-        message:
-          $ref: '#/components/schemas/A2AMessage'
-        configuration:
-          type: object
-          description: A push-notification config here is refused with PushNotificationNotSupportedError (we never push).
-        metadata:
-          type: object
-        tenant:
-          type: string
   securitySchemes:
     SessionToken:
       type: apiKey

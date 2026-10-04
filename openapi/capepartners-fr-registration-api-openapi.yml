@@ -63,6 +63,68 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    SellerProfile:
+      type: object
+      properties:
+        revenue:
+          type: number
+          description: Revenue in EUR millions
+        growth:
+          type: number
+          description: Revenue growth, percent
+        ebitda_margin:
+          type: number
+          description: EBITDA margin, percent
+        product:
+          type: string
+          description: Product/solution description
+        sector:
+          type: string
+        description:
+          type: string
+        data_quality:
+          type: integer
+          description: Data-quality score /10
+        missing_fields:
+          type: array
+          items:
+            type: string
+    SubmitResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        matches:
+          type: integer
+        match_details:
+          type: array
+          items:
+            $ref: '#/components/schemas/Match'
+        summary:
+          type: string
+    SubmitRequest:
+      type: object
+      properties:
+        session_id:
+          type: string
+        user_type:
+          type: string
+          enum:
+          - investor
+          - opportunity
+          - seller
+        identity:
+          $ref: '#/components/schemas/Identity'
+        buyer:
+          $ref: '#/components/schemas/BuyerProfile'
+        seller:
+          $ref: '#/components/schemas/SellerProfile'
+        turnstileToken:
+          type: string
+          description: Cloudflare Turnstile verification token (required)
+      required:
+      - user_type
+      - turnstileToken
     BuyerProfile:
       type: object
       properties:
@@ -95,55 +157,6 @@ components:
           type: array
           items:
             type: string
-    Identity:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Contact first/last name
-        email:
-          type: string
-          format: email
-        company:
-          type: string
-        role:
-          type: string
-    SubmitRequest:
-      type: object
-      properties:
-        session_id:
-          type: string
-        user_type:
-          type: string
-          enum:
-          - investor
-          - opportunity
-          - seller
-        identity:
-          $ref: '#/components/schemas/Identity'
-        buyer:
-          $ref: '#/components/schemas/BuyerProfile'
-        seller:
-          $ref: '#/components/schemas/SellerProfile'
-        turnstileToken:
-          type: string
-          description: Cloudflare Turnstile verification token (required)
-      required:
-      - user_type
-      - turnstileToken
-    SubmitResponse:
-      type: object
-      properties:
-        session_id:
-          type: string
-        matches:
-          type: integer
-        match_details:
-          type: array
-          items:
-            $ref: '#/components/schemas/Match'
-        summary:
-          type: string
     Match:
       type: object
       description: A ranked counterparty match. Names are redacted (Company A/B/C…) and financial fit signals are returned as coarse bands inside `reasons` (strong/moderate/weak/poor) until an NDA is recorded. Full identity and granular metrics unlock only after POST /api/nda/sign.
@@ -168,32 +181,19 @@ components:
           items:
             type: string
           description: 'Band-qualified fit reasons, e.g. "Revenue fit: strong vs range €2M–€50M" (no raw revenue/growth/EBITDA)'
-    SellerProfile:
+    Identity:
       type: object
       properties:
-        revenue:
-          type: number
-          description: Revenue in EUR millions
-        growth:
-          type: number
-          description: Revenue growth, percent
-        ebitda_margin:
-          type: number
-          description: EBITDA margin, percent
-        product:
+        name:
           type: string
-          description: Product/solution description
-        sector:
+          description: Contact first/last name
+        email:
           type: string
-        description:
+          format: email
+        company:
           type: string
-        data_quality:
-          type: integer
-          description: Data-quality score /10
-        missing_fields:
-          type: array
-          items:
-            type: string
+        role:
+          type: string
   securitySchemes:
     SessionToken:
       type: apiKey

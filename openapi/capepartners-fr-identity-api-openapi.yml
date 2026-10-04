@@ -187,6 +187,56 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    WorkspaceJoinRequest:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+        exchange_key:
+          type: string
+          description: 'TIER-2 GATE. Required when an AGENT (no verified Turnstile token) is issued a NEW workspace UUID: the msgid from an ACCEPTED manifest, or its answer_key. The handshake precedes the UUID — without it the join is refused (403) and the agent keeps the tier-1 exchange inbox. A human-verified join and an existing workspace are exempt.'
+        turnstileToken:
+          type: string
+          description: Optional Cloudflare Turnstile token from a human solving the widget on the Join form. If provided it must verify or the join is refused (403). An agent POSTing directly sends none and stays classified as an agent by the NDA email actor-gate.
+      required:
+      - uuid
+      - name
+      - email
+      - company
+    SellerProfile:
+      type: object
+      properties:
+        revenue:
+          type: number
+          description: Revenue in EUR millions
+        growth:
+          type: number
+          description: Revenue growth, percent
+        ebitda_margin:
+          type: number
+          description: EBITDA margin, percent
+        product:
+          type: string
+          description: Product/solution description
+        sector:
+          type: string
+        description:
+          type: string
+        data_quality:
+          type: integer
+          description: Data-quality score /10
+        missing_fields:
+          type: array
+          items:
+            type: string
     BuyerProfile:
       type: object
       properties:
@@ -219,53 +269,6 @@ components:
           type: array
           items:
             type: string
-    SessionIdentity:
-      type: object
-      properties:
-        session_id:
-          type: string
-          format: uuid
-        identity:
-          $ref: '#/components/schemas/Identity'
-        user_type:
-          type: string
-          enum:
-          - investor
-          - buyer
-          - opportunity
-          - seller
-        buyer:
-          $ref: '#/components/schemas/BuyerProfile'
-        seller:
-          $ref: '#/components/schemas/SellerProfile'
-        valuation:
-          $ref: '#/components/schemas/Valuation'
-    Identity:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Contact first/last name
-        email:
-          type: string
-          format: email
-        company:
-          type: string
-        role:
-          type: string
-    WorkspaceJoinResponse:
-      type: object
-      properties:
-        session_id:
-          type: string
-        uuid:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        company:
-          type: string
     WorkspaceInfo:
       type: object
       properties:
@@ -279,30 +282,6 @@ components:
           type: string
         created_at:
           type: string
-    WorkspaceJoinRequest:
-      type: object
-      properties:
-        uuid:
-          type: string
-          format: uuid
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        company:
-          type: string
-        exchange_key:
-          type: string
-          description: 'TIER-2 GATE. Required when an AGENT (no verified Turnstile token) is issued a NEW workspace UUID: the msgid from an ACCEPTED manifest, or its answer_key. The handshake precedes the UUID — without it the join is refused (403) and the agent keeps the tier-1 exchange inbox. A human-verified join and an existing workspace are exempt.'
-        turnstileToken:
-          type: string
-          description: Optional Cloudflare Turnstile token from a human solving the widget on the Join form. If provided it must verify or the join is refused (403). An agent POSTing directly sends none and stays classified as an agent by the NDA email actor-gate.
-      required:
-      - uuid
-      - name
-      - email
-      - company
     Valuation:
       type: object
       properties:
@@ -328,32 +307,53 @@ components:
           - no_data
         message:
           type: string
-    SellerProfile:
+    Identity:
       type: object
       properties:
-        revenue:
-          type: number
-          description: Revenue in EUR millions
-        growth:
-          type: number
-          description: Revenue growth, percent
-        ebitda_margin:
-          type: number
-          description: EBITDA margin, percent
-        product:
+        name:
           type: string
-          description: Product/solution description
-        sector:
+          description: Contact first/last name
+        email:
           type: string
-        description:
+          format: email
+        company:
           type: string
-        data_quality:
-          type: integer
-          description: Data-quality score /10
-        missing_fields:
-          type: array
-          items:
-            type: string
+        role:
+          type: string
+    SessionIdentity:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        identity:
+          $ref: '#/components/schemas/Identity'
+        user_type:
+          type: string
+          enum:
+          - investor
+          - buyer
+          - opportunity
+          - seller
+        buyer:
+          $ref: '#/components/schemas/BuyerProfile'
+        seller:
+          $ref: '#/components/schemas/SellerProfile'
+        valuation:
+          $ref: '#/components/schemas/Valuation'
+    WorkspaceJoinResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
   securitySchemes:
     SessionToken:
       type: apiKey

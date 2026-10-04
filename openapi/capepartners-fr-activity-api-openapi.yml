@@ -40,32 +40,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    ActivityEvent:
-      type: object
-      properties:
-        type:
-          type: string
-        title:
-          type: string
-        detail:
-          type: string
-        time:
-          type: string
-    ActivityResponse:
-      type: object
-      properties:
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/ActivityEvent'
-        todo:
-          type: array
-          items:
-            $ref: '#/components/schemas/TodoItem'
-          description: 'Pending required actions for this session: agreement review if unsigned, profile completion, parked suggestions awaiting action, and unreviewed counterparty interaction signals (a pairing created on this profile, or a phase change on it). Each item carries {type, action, label, detail, priority}. Items of type=''interest'' are cleared by POST /api/interest-signals/{session_id}/ack; the others clear when the underlying condition is resolved. Array empty when nothing is pending.'
-        nda_signed:
-          type: boolean
-          description: True when a server-side NDA signature exist for this session.
     TodoItem:
       type: object
       properties:
@@ -89,6 +63,32 @@ components:
           items:
             type: integer
           description: 'For type=interest: the interaction-ledger event ids to send to POST /api/interest-signals/{session_id}/ack. Empty for the ack_all rollup.'
+    ActivityResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityEvent'
+        todo:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoItem'
+          description: 'Pending required actions for this session: agreement review if unsigned, profile completion, parked suggestions awaiting action, and unreviewed counterparty interaction signals (a pairing created on this profile, or a phase change on it). Each item carries {type, action, label, detail, priority}. Items of type=''interest'' are cleared by POST /api/interest-signals/{session_id}/ack; the others clear when the underlying condition is resolved. Array empty when nothing is pending.'
+        nda_signed:
+          type: boolean
+          description: True when a server-side NDA signature exist for this session.
+    ActivityEvent:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        time:
+          type: string
   securitySchemes:
     SessionToken:
       type: apiKey

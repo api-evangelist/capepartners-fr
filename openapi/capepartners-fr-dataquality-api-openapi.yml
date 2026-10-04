@@ -40,6 +40,21 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    DqEnqueueResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        enqueued:
+          type: integer
+        steps:
+          type: array
+          items:
+            type: string
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
     DqEnqueueRequest:
       type: object
       properties:
@@ -58,21 +73,6 @@ components:
       required:
       - entity_type
       - entity_id
-    DqEnqueueResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        enqueued:
-          type: integer
-        steps:
-          type: array
-          items:
-            type: string
-        entity_type:
-          type: string
-        entity_id:
-          type: integer
   securitySchemes:
     SessionToken:
       type: apiKey

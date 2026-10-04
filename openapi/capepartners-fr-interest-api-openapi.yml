@@ -76,17 +76,19 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    InterestAckRequest:
+    InterestAckResponse:
       type: object
-      description: Acknowledge interaction signals. Send either event_ids (from the To Do item) or all=true. Events are scoped to the entity that session owns; only its own signals can be acknowledged.
       properties:
-        event_ids:
-          type: array
-          items:
-            type: integer
-        all:
-          type: boolean
-          default: false
+        marked:
+          type: integer
+          description: Signals that moved to reviewed.
+        pending:
+          type: integer
+          description: Signals still pending review for this entity after the call.
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
     InterestSignalsResponse:
       type: object
       description: Inbound interest signals from counterparties about the session's own entity. Counts only; no counterparty identities.
@@ -244,19 +246,17 @@ components:
               type: boolean
             computed_at:
               type: number
-    InterestAckResponse:
+    InterestAckRequest:
       type: object
+      description: Acknowledge interaction signals. Send either event_ids (from the To Do item) or all=true. Events are scoped to the entity that session owns; only its own signals can be acknowledged.
       properties:
-        marked:
-          type: integer
-          description: Signals that moved to reviewed.
-        pending:
-          type: integer
-          description: Signals still pending review for this entity after the call.
-        entity_type:
-          type: string
-        entity_id:
-          type: integer
+        event_ids:
+          type: array
+          items:
+            type: integer
+        all:
+          type: boolean
+          default: false
   securitySchemes:
     SessionToken:
       type: apiKey

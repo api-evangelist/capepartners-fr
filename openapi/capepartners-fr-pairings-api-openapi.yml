@@ -237,19 +237,106 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    PairingCreateResponse:
+    PairingCreateRequest:
       type: object
       properties:
-        pair_id:
-          type: string
         buyer_id:
           type: integer
         seller_id:
           type: integer
         match_score:
           type: number
+          default: 0
         phase:
           type: string
+          default: 0_prospecting
+      required:
+      - buyer_id
+      - seller_id
+    PhaseRequestDecisionResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        decision:
+          type: string
+          enum:
+          - confirm
+          - dismiss
+          - cancel
+        status:
+          type: string
+          enum:
+          - confirmed
+          - dismissed
+          - cancelled
+          - expired
+        pair_id:
+          type: string
+        phase:
+          type: string
+          description: The pairing phase after the decision (unchanged for dismiss/cancel/expired).
+        reason:
+          type: string
+          nullable: true
+          enum:
+          - expired
+          - already_resolved
+          - null
+          description: '''expired'' when the request lapsed unanswered instead of being decided.'
+    Pairing:
+      type: object
+      properties:
+        pair_id:
+          type: string
+          example: pair-12-345
+        buyer_id:
+          type: integer
+        seller_id:
+          type: integer
+        match_score:
+          type: number
+          format: float
+        phase:
+          type: string
+        valuation:
+          type: number
+          format: float
+        valuation_triangulated:
+          type: number
+          format: float
+        updated_at:
+          type: string
+        buyer_name:
+          type: string
+        seller_name:
+          type: string
+        buyer_sector:
+          type: string
+        seller_sector:
+          type: string
+        seller_revenue:
+          type: number
+        seller_growth:
+          type: number
+        seller_ebitda:
+          type: number
+        seller_product:
+          type: string
+        seller_contact_name:
+          type: string
+        seller_contact_email:
+          type: string
+        seller_data_quality:
+          type: integer
+        buyer_ticket_min:
+          type: number
+        buyer_ticket_max:
+          type: number
+        pairing_dbid:
+          type: integer
+        phase_request:
+          $ref: '#/components/schemas/PendingPhaseRequest'
     PairingsResponse:
       type: object
       properties:
@@ -314,22 +401,6 @@ components:
                 enum:
                 - awaiting_confirmation
                 - no_counterparty
-    PairingCreateRequest:
-      type: object
-      properties:
-        buyer_id:
-          type: integer
-        seller_id:
-          type: integer
-        match_score:
-          type: number
-          default: 0
-        phase:
-          type: string
-          default: 0_prospecting
-      required:
-      - buyer_id
-      - seller_id
     PendingPhaseRequest:
       type: object
       nullable: true
@@ -361,90 +432,19 @@ components:
           enum:
           - buyer
           - seller
-    Pairing:
+    PairingCreateResponse:
       type: object
       properties:
         pair_id:
           type: string
-          example: pair-12-345
         buyer_id:
           type: integer
         seller_id:
           type: integer
         match_score:
           type: number
-          format: float
         phase:
           type: string
-        valuation:
-          type: number
-          format: float
-        valuation_triangulated:
-          type: number
-          format: float
-        updated_at:
-          type: string
-        buyer_name:
-          type: string
-        seller_name:
-          type: string
-        buyer_sector:
-          type: string
-        seller_sector:
-          type: string
-        seller_revenue:
-          type: number
-        seller_growth:
-          type: number
-        seller_ebitda:
-          type: number
-        seller_product:
-          type: string
-        seller_contact_name:
-          type: string
-        seller_contact_email:
-          type: string
-        seller_data_quality:
-          type: integer
-        buyer_ticket_min:
-          type: number
-        buyer_ticket_max:
-          type: number
-        pairing_dbid:
-          type: integer
-        phase_request:
-          $ref: '#/components/schemas/PendingPhaseRequest'
-    PhaseRequestDecisionResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-        decision:
-          type: string
-          enum:
-          - confirm
-          - dismiss
-          - cancel
-        status:
-          type: string
-          enum:
-          - confirmed
-          - dismissed
-          - cancelled
-          - expired
-        pair_id:
-          type: string
-        phase:
-          type: string
-          description: The pairing phase after the decision (unchanged for dismiss/cancel/expired).
-        reason:
-          type: string
-          nullable: true
-          enum:
-          - expired
-          - already_resolved
-          - null
-          description: '''expired'' when the request lapsed unanswered instead of being decided.'
   securitySchemes:
     SessionToken:
       type: apiKey
