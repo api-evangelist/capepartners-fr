@@ -99,6 +99,8 @@ apis:
   humanURL: https://www.capepartners.fr/
   baseURL: https://sniffer.capepartners.fr
   tags:
+  - Data Quality
+  tags_raw:
   - DataQuality
   properties:
   - type: OpenAPI
@@ -117,6 +119,8 @@ apis:
   humanURL: https://www.capepartners.fr/
   baseURL: https://sniffer.capepartners.fr
   tags:
+  - Deal Flow
+  tags_raw:
   - DealFlow
   properties:
   - type: OpenAPI
@@ -333,6 +337,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/capepartners-fr-capability-edges.yml
+  name: Cape Partners Business Capability Map
 - type: Overlay
   url: overlays/capepartners-fr-openapi-overlay.yaml
 - type: Website
