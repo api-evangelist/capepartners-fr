@@ -1,0 +1,59 @@
+slug: capepartners-fr
+provider: Cape Partners
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 4
+edges:
+- tag: DataQuality
+  spec_file: capepartners-fr-dataquality-api-openapi.yml
+  capability_id: BC-610.30
+  capability_id_l1: BC-610
+  capability_name: Data Quality Management
+  confidence: 0.72
+  evidence: POST /api/dq/enqueue  Enqueue high-priority data-quality improvement steps for a seller or
+    buyer
+  reason: The single operation queues data-quality improvement/remediation work on seller and buyer company
+    records, which is exactly Data Quality Management (profiling and remediation of records). Narrow surface
+    keeps confidence moderate.
+- tag: DealFlow
+  spec_file: capepartners-fr-dealflow-api-openapi.yml
+  capability_id: BC-100.30
+  capability_id_l1: BC-100
+  capability_name: Corporate Development Management
+  confidence: 0.7
+  evidence: GET /api/deal-flow/{session_id}  the counterparty…; POST /api/watchlist  Pin or unpin a counterparty
+    on this session's Deal Flow watchlist.
+  reason: Operations surface M&A counterparties and a deal-flow watchlist for a buyer/seller session,
+    which realises Corporate Development Management (M&A, divestitures, partnerships) for the participants.
+    Confidence tempered because the surface is a thin read/pin pair.
+- tag: InfoMemos
+  spec_file: capepartners-fr-infomemos-api-openapi.yml
+  capability_id: BC-100.30
+  capability_id_l1: BC-100
+  capability_name: Corporate Development Management
+  confidence: 0.7
+  evidence: GET /api/infomemo/{session_id}  Generate/retrieve the InfoMemo markdown for the session. NDA-gated;
+    GET /api/light-infomemo/{session_id}/{pair_id}  ...teaser) InfoMemo PDF for a pairing
+  reason: Generating NDA-gated information memoranda and teaser documents for a buyer/seller pairing is
+    core M&A transaction documentation, which the candidate list places under Corporate Development Management.
+    Moderate confidence given the document-generation framing.
+- tag: Pairings
+  spec_file: capepartners-fr-pairings-api-openapi.yml
+  capability_id: BC-100.30
+  capability_id_l1: BC-100
+  capability_name: Corporate Development Management
+  confidence: 0.7
+  evidence: POST /api/pairings/create — "Create a new pairing (pair-{buyer_id}-{seller_id}) between a
+    buyer and seller"; POST /api/pairings/update_phase — "Bulk-update deal phase for one or more pairings"
+  reason: 'Pairings track a buyer–seller M&A deal through phases with mutual consent, i.e. deal-process
+    management within Corporate Development. Not sales pipeline: the entities are acquirers and target
+    companies, not customers buying a product.'
