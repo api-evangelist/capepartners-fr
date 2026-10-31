@@ -135,21 +135,22 @@ Links to the company's own pages. This repository publishes no copy of their spe
 - [API reference](https://www.capepartners.fr/api)
 - [Sign up](https://www.capepartners.fr/new-workspace.html)
 - [Terms of service](https://www.capepartners.fr/tos)
+- [Privacy policy](https://www.capepartners.fr/privacy)
 
 ## API Evangelist rating
 
-**Kin Score 38.0** — thin · rubric 0.24.0 · scored 2026-10-17
+**Kin Score 37.4** — thin · rubric 0.25.0 · scored 2026-10-23
 
 | Facet | Score |
 |---|---|
-| Discoverability | 75.0 |
+| Discoverability | 69.6 |
 | Contract quality | 44.1 |
 | Contract governance | 18.2 |
 | Operational transparency | 31.6 |
 | Developer ergonomics | 30.4 |
 | Access clarity | 23.7 |
 
-**Agent readiness 30.0** — agent-ready
+**Agent readiness 33.8** — agent-ready
 
 | Agent-readiness dimension | Result |
 |---|---|
@@ -172,6 +173,8 @@ Links to the company's own pages. This repository publishes no copy of their spe
 | Protected Resource Metadata | — |
 | Dynamic Client Registration | — |
 | Agentic Commerce | — |
+| Pagination Ratio | paginated |
+| Operation Distinctiveness | distinct |
 
 **Regulatory alignment 20.6** — Horizontal (data, software, accessibility, platform)
 
