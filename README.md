@@ -101,18 +101,68 @@ Model Context Protocol servers that expose the API to agents.
 
 - [capepartners-sniffer (candidate)](https://apis.io/servers/capepartners-fr/capepartners-sniffer-candidate/)
 
+#### Agentic access (1)
+
+Which operations an agent can call, which act, and which need a human in the loop.
+
+- [Capepartners Fr Agentic Access](https://apis.io/agentic-access/capepartners-fr/capepartners-fr-agentic-access/)
+
+#### JSON Schema (33)
+
+The data models the API reads and writes.
+
+- [A2AJsonRpcRequest](https://apis.io/schemas/capepartners-fr/capepartners-fr-a2-ajson-rpc-request/)
+- [A2ASendMessageRequest](https://apis.io/schemas/capepartners-fr/capepartners-fr-a2-asend-message-request/)
+- [A2ATask](https://apis.io/schemas/capepartners-fr/capepartners-fr-a2-atask/)
+- [ActivityResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-activity-response/)
+- [DealFlowResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-deal-flow-response/)
+- [DqEnqueueRequest](https://apis.io/schemas/capepartners-fr/capepartners-fr-dq-enqueue-request/)
+- [DqEnqueueResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-dq-enqueue-response/)
+- [EntityName](https://apis.io/schemas/capepartners-fr/capepartners-fr-entity-name/)
+- [InfoMemo](https://apis.io/schemas/capepartners-fr/capepartners-fr-info-memo/)
+- [InterestAckRequest](https://apis.io/schemas/capepartners-fr/capepartners-fr-interest-ack-request/)
+- [InterestAckResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-interest-ack-response/)
+- [InterestSignalsResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-interest-signals-response/)
+- [Match](https://apis.io/schemas/capepartners-fr/capepartners-fr-match/)
+- [MatchedNames](https://apis.io/schemas/capepartners-fr/capepartners-fr-matched-names/)
+- [NdaSignRequest](https://apis.io/schemas/capepartners-fr/capepartners-fr-nda-sign-request/)
+- [NdaSignResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-nda-sign-response/)
+- [NdaTextResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-nda-text-response/)
+- [PairingCreateRequest](https://apis.io/schemas/capepartners-fr/capepartners-fr-pairing-create-request/)
+- [PairingCreateResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-pairing-create-response/)
+- [PairingsResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-pairings-response/)
+- [PhaseRequestDecisionResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-phase-request-decision-response/)
+- [PhaseUpdateResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-phase-update-response/)
+- [ProductAnalysis](https://apis.io/schemas/capepartners-fr/capepartners-fr-product-analysis/)
+- [SearchResponse](https://apis.io/schemas/capepartners-fr/capepartners-fr-search-response/)
+- [SessionIdentity](https://apis.io/schemas/capepartners-fr/capepartners-fr-session-identity/)
+- …and 8 more published on APIs.io
+
+#### JSON-LD (1)
+
+Linked-data contexts for the provider's vocabulary.
+
+- [Capepartners Fr Context](https://apis.io/jsonld/capepartners-fr/capepartners-fr-context/)
+
 #### Overlays (1)
 
 OpenAPI overlays, including conversational phrasing for each operation.
 
 - [Capepartners Fr Openapi Overlay](https://apis.io/overlays/capepartners-fr/capepartners-fr-openapi-overlay/)
 
-#### Security (2)
+#### Governance rules (1)
+
+Spectral rulesets for the provider's contracts.
+
+- [Cape Partners API Rules](https://apis.io/rules/capepartners-fr/capepartners-fr-rules/)
+
+#### Security (3)
 
 Authentication, trust centre, and vulnerability disclosure.
 
 - [Capepartners Fr Authentication](https://apis.io/security/capepartners-fr/capepartners-fr-authentication/)
 - [Capepartners Fr Domain Security](https://apis.io/security/capepartners-fr/capepartners-fr-domain-security/)
+- [Capepartners Fr Vulnerability Disclosure](https://apis.io/security/capepartners-fr/capepartners-fr-vulnerability-disclosure/)
 
 #### Plans and pricing (1)
 
